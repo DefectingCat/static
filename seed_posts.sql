@@ -19151,6 +19151,3663 @@ Assembly 不是要你天天写的语言，但它是理解计算机如何工作�
     NOW() - INTERVAL '27 days',
     NOW() - INTERVAL '27 days',
     NOW() - INTERVAL '27 days'
+),
+-- ============================================================
+-- 新增文章（2026 年补充）
+-- ============================================================
+(
+    1,
+    'Docker 容器化技术完全指南：从入门到生产部署',
+    'docker-deep-dive',
+    '本文从架构设计、镜像构建、容器编排到生产部署，全面讲解 Docker 技术栈。涵盖命名空间、cgroups、UnionFS 等内核级原理，以及 compose、多阶段构建和安全加固实践。',
+    $doc$
+# Docker 容器化技术完全指南：从入门到生产部署
+
+## 前言
+
+我第一次接触 Docker 是在 2016 年。当时团队在用虚拟机部署微服务，每个服务需要单独的 CentOS 镜像，配环境就得花半小时。有一次我本地跑得好好的 Python 脚本，部署到服务器上死活报错，折腾了一下午才发现是 OpenSSL 版本不一致。这种"在我机器上能跑"的问题，在容器化出现之前几乎是每个后端工程师的噩梦。
+
+Docker 改变了这个局面。它用一种轻量级的方式把应用和它的运行环境打包在一起，确保在任何地方都能一致地运行。但 Docker 不仅仅是一个部署工具，它的内核原理、网络模型和存储机制都值得深入理解。这篇文章会从底层原理讲起，覆盖从开发到生产的完整流程。
+
+---
+
+## 一、Docker 架构与核心概念
+
+### 1.1 整体架构
+
+Docker 采用客户端-服务端（C/S）架构。用户通过 Docker CLI 发送命令，Docker 守护进程（dockerd）负责实际的容器管理。
+
+```
+┌─────────────────────────────────────────────────────┐
+│                    Docker Client                     │
+│                  (docker CLI)                        │
+└───────────────────────┬─────────────────────────────┘
+                        │ REST API
+┌───────────────────────▼─────────────────────────────┐
+│                   Docker Daemon                      │
+│                 (dockerd)                            │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │
+│  │  镜像管理    │  │  容器管理    │  │  网络管理    │  │
+│  └─────────────┘  └─────────────┘  └─────────────┘  │
+└───────────────────────┬─────────────────────────────┘
+                        │ containerd
+┌───────────────────────▼─────────────────────────────┐
+│              containerd-shim                          │
+│              runc (OCI runtime)                       │
+└─────────────────────────────────────────────────────┘
+```
+
+dockerd 不直接管理容器，它把任务交给 containerd，containerd 再通过 containerd-shim 启动 runc。runc 是符合 OCI（Open Container Initiative）标准的运行时，负责创建和运行容器。这个分层设计的好处是：即使 dockerd 崩溃，已经在运行的容器不会受到影响。
+
+### 1.2 镜像 vs 容器
+
+新手最容易混淆的概念。镜像是只读的模板，容器是镜像的运行实例。类比一下：镜像相当于一个 Class，容器就是这个 Class 的 Instance。
+
+镜像由多层只读文件系统叠加而成。你拉取一个 nginx:latest 镜像，Docker 会下载多个层——基础系统层、nginx 安装层、配置层。容器在镜像之上加了一个可写层，所有的文件修改都发生在这个可写层里。
+
+```bash
+# 查看镜像的分层结构
+docker history nginx:latest
+
+# 查看容器的可写层
+docker inspect <container_id> | grep -A 5 "GraphDriver"
+```
+
+### 1.3 Registry 与仓库
+
+Registry 是存放镜像的服务。Docker Hub 是最大的公共 Registry，企业通常搭建私有 Registry。仓库（Repository）是同一镜像不同版本的集合，比如 nginx:1.24、nginx:1.25 属于同一个仓库。
+
+```bash
+# 拉取镜像（默认从 Docker Hub）
+docker pull nginx:1.25
+
+# 推送镜像到私有 Registry
+docker tag myapp:latest registry.example.com/myapp:v1
+docker push registry.example.com/myapp:v1
+```
+
+---
+
+## 二、Docker 镜像深入解析
+
+### 2.1 镜像分层原理
+
+Docker 镜像的核心是 UnionFS（联合文件系统）。每一层都是只读的，当需要修改文件时，Docker 会在最上层创建一个副本进行修改。这个过程叫 Copy-on-Write（写时复制）。
+
+```dockerfile
+# 一个典型的 Dockerfile
+FROM ubuntu:22.04
+RUN apt-get update && apt-get install -y python3 python3-pip
+COPY requirements.txt /app/
+RUN pip3 install -r /app/requirements.txt
+COPY . /app/
+WORKDIR /app
+CMD ["python3", "app.py"]
+```
+
+这个 Dockerfile 会生成 5 层：ubuntu:22.04 基础层、apt-get 安装层、COPY requirements.txt 层、pip install 层、COPY 源码层。每层都有唯一的 SHA256 摘要。如果两个镜像有相同的层，Docker 会复用，不重复存储。这就是为什么拉取镜像比复制整个虚拟机快得多。
+
+### 2.2 构建缓存机制
+
+Docker 构建时会逐层检查缓存。如果某一层没有变化，就直接复用缓存。一旦某一层发生变化，它之后的所有层都需要重新构建。
+
+```dockerfile
+# 不好的写法：缓存容易失效
+COPY . /app/
+RUN pip3 install -r /app/requirements.txt
+
+# 好的写法：先复制依赖文件，再复制源码
+COPY requirements.txt /app/
+RUN pip3 install -r /app/requirements.txt
+COPY . /app/
+```
+
+Docker 20.10 以后支持 BuildKit，它提供了更精细的缓存控制。
+
+### 2.3 多阶段构建
+
+多阶段构建解决了一个长期问题：构建环境和运行环境分离。很多编译型语言（Go、Rust、Java）在构建时需要完整的工具链，但运行时只需要二进制文件。
+
+```dockerfile
+# 构建阶段
+FROM golang:1.21-alpine AS builder
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -o /app/server .
+
+# 运行阶段
+FROM scratch
+COPY --from=builder /app/server /server
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+EXPOSE 8080
+ENTRYPOINT ["/server"]
+```
+
+最终镜像只包含一个静态编译的二进制文件和 SSL 证书，大小可能只有几十 MB，而构建阶段的 Alpine 镜像有几百 MB。
+
+### 2.4 镜像优化技巧
+
+几个要点：用 alpine 或 distroless 基础镜像，不要用 ubuntu；`--only=production` 跳过 devDependencies；最后用 USER 指令切换到非 root 用户；合并 RUN 指令减少层数。
+
+---
+
+## 三、容器网络
+
+### 3.1 网络驱动
+
+Docker 提供了多种网络驱动：bridge（单机多容器）、host（高性能网络）、overlay（跨主机通信）、macvlan（需要独立 MAC 地址）、none（完全隔离）。默认的 bridge 网络有个限制：容器之间只能通过 IP 通信，不能通过容器名。自定义 bridge 网络支持 DNS 解析。
+
+### 3.2 容器间通信原理
+
+在 bridge 网络中，每个容器都有自己的网络命名空间。Docker 通过 veth pair（虚拟以太网设备对）连接容器和宿主机的 docker0 网桥。iptables 规则负责 NAT 和端口映射。
+
+### 3.3 自定义网络配置
+
+生产环境中，默认的网络配置通常不够用。你需要调整 MTU、定义子网、配置 DNS。禁用 IP masquerade 可以避免 Docker 的 NAT 干扰容器获取真实客户端 IP。
+
+---
+
+## 四、数据持久化：Volume 与 Bind Mount
+
+### 4.1 三种存储类型
+
+Docker 有三种主要的持久化方式：Volume（Docker 管理的存储区域）、Bind Mount（直接挂载宿主机目录到容器）、tmpfs（挂载到内存）。Volume 推荐用于数据库等有状态服务，Bind Mount 推荐用于开发时的代码同步。
+
+### 4.2 Volume vs Bind Mount 对比
+
+Volume 由 Docker 管理，跨平台兼容，但备份需要额外操作。Bind Mount 直接复制目录即可备份，但路径依赖宿主机。开发环境倾向用 Bind Mount，生产环境用 Volume。
+
+---
+
+## 五、Docker Compose
+
+### 5.1 基础配置
+
+docker-compose.yml 是定义多容器应用的标准方式。一个典型的 Web 应用可能包含 Web 服务器、应用服务器和数据库。depends_on 控制启动顺序，但有坑：它只等待容器启动，不等待服务就绪。用 healthcheck + condition 才能确保真正的就绪。
+
+### 5.2 环境变量与 Secrets
+
+`.env` 文件存放默认值，`.env.production` 存放生产配置。注意不要把 `.env` 提交到 Git。Docker BuildKit Secrets 可以在构建时使用密码但不留在镜像层。
+
+### 5.3 Profiles 与选择性启动
+
+Profiles 可以按场景分组服务，用 `docker compose --profile production up` 只启动特定 profile 下的服务。
+
+---
+
+## 六、Dockerfile 最佳实践
+
+### 6.1 指令优化顺序
+
+Dockerfile 的指令顺序影响构建缓存效率。把变化频率低的指令放前面，变化频率高的放后面。基础镜像放最前面，应用代码放最后面。
+
+### 6.2 安全相关实践
+
+使用 `COPY --chown` 避免后续 chown 操作；用 `npm cache clean --force` 清理缓存减小镜像体积；不要在镜像里硬编码密码或密钥；用 `.dockerignore` 排除敏感文件。
+
+### 6.3 健康检查
+
+健康检查配合 `restart: unless-stopped` 可以实现自动重启。
+
+---
+
+## 七、Docker 安全加固
+
+### 7.1 Linux 内核隔离机制
+
+Docker 的安全模型建立在 Linux 内核的几个关键特性上：Namespace 提供进程隔离，cgroups 限制容器的资源使用，UnionFS 提供文件系统隔离。
+
+### 7.2 容器逃逸防护
+
+不要用 `--privileged` 模式运行容器；只授予必要的能力；禁止容器获取新权限；使用只读文件系统。
+
+### 7.3 镜像安全扫描
+
+使用 Trivy 或 Docker Scout 扫描镜像漏洞。
+
+---
+
+## 八、生产环境部署
+
+### 8.1 日志管理
+
+Docker 默认的日志驱动是 json-file，生产环境需要配置日志轮转。对于集中式日志收集，推荐用 syslog 或 journald 驱动。
+
+### 8.2 资源限制
+
+生产环境必须设置资源限制，防止某个容器拖垮整个宿主机。limits 是上限，reservations 是保证的最低资源。
+
+### 8.3 重启策略
+
+生产环境用 `unless-stopped` 最合适。
+
+### 8.4 滚动更新
+
+`order: start-first` 先启动新容器，再停止旧容器，确保零停机时间。`failure_action: rollback` 在更新失败时自动回滚。
+
+---
+
+## 九、Docker 底层原理
+
+### 9.1 Namespace 详解
+
+Linux Namespace 是容器隔离的基础。Docker 使用了 7 种 Namespace：PID、NET、MNT、UTS、IPC、USER、CGROUP。
+
+### 9.2 Cgroups v2
+
+现代 Linux 发行版默认使用 cgroups v2，它提供了更精细的资源控制：memory.swap.max、io.latency、cpu.weight。
+
+### 9.3 OverlayFS
+
+Docker 默认使用 OverlayFS（overlay2 存储驱动）来实现分层文件系统。当容器删除时，可写层的数据也会丢失。
+
+---
+
+## 十、实战案例
+
+文中覆盖了 Python Django、Go 微服务、Java Spring Boot 三种典型项目的 Docker 化部署方案，包括 Dockerfile 编写和 docker-compose 配置。
+
+---
+
+## 十一、常见问题与排查
+
+容器无法启动时查看日志和退出码；网络问题测试连通性和 DNS 解析；磁盘空间不足用 `docker system df` 和 `docker system prune` 清理；性能问题用 `docker stats` 监控。
+
+---
+
+## 结尾
+
+这篇文章覆盖了 Docker 从基础概念到生产部署的主要知识点。Docker 是整个容器化生态的基础，理解它的内核原理和最佳实践，才能更好地使用上层工具。
+
+建议从搭建一个完整的本地开发环境开始，用 docker-compose 把你常用的数据库、缓存、消息队列都跑起来，写一个简单的 Web 应用部署到上面。
+$doc$,
+    NULL,
+    'published',
+    NOW() - INTERVAL '15 days',
+    NOW() - INTERVAL '15 days',
+    NOW() - INTERVAL '15 days'
+),
+(
+    1,
+    'Kubernetes 集群管理与编排实战',
+    'kubernetes-guide',
+    '从 Pod 调度到 Service 网络，从 Helm Charts 到 GitOps 工作流，全面讲解 Kubernetes 集群管理与生产部署实践。',
+    $doc$
+# Kubernetes 集群管理与编排实战
+
+## 前言
+
+Kubernetes（简称 K8s）已经成为容器编排的事实标准。如果你在用 Docker Compose 管理生产环境，迟早会遇到它的天花板：单机部署、没有自动故障转移、没有滚动更新、没有服务发现。当你开始面对这些问题的时候，就是该上 Kubernetes 的时候了。
+
+这篇文章不是 K8s 的入门教程，官方文档和教程已经写得很好了。我想分享的是在实际生产环境中积累的经验——那些文档里不会告诉你、但你迟早会踩的坑。
+
+---
+
+## 一、核心架构
+
+### 1.1 控制平面
+
+Kubernetes 的控制平面（Control Plane）由几个核心组件组成：
+
+- **kube-apiserver**：所有操作的入口，REST API 服务器
+- **etcd**：分布式键值存储，保存集群的所有状态
+- **kube-scheduler**：决定 Pod 运行在哪个节点
+- **kube-controller-manager**：运行各种控制器，确保集群状态符合期望
+
+控制平面的高可用很重要。生产环境至少要有 3 个 master 节点，etcd 也要做集群。我见过单 master 的集群在生产环境挂掉之后，整个集群不可用长达半小时的情况。
+
+### 1.2 工作节点
+
+每个工作节点（Worker Node）运行几个关键组件：
+
+- **kubelet**：节点上的代理，负责管理 Pod 的生命周期
+- **kube-proxy**：维护节点上的网络规则，实现 Service 的负载均衡
+- **容器运行时**：containerd 或 CRI-O
+
+节点的资源管理很关键。每个节点都有资源配额，调度器根据这些配额来决定 Pod 放在哪里。用 `kubectl describe node <node-name>` 可以查看节点的资源使用情况。
+
+---
+
+## 二、Pod 与调度
+
+### 2.1 Pod 设计原则
+
+Pod 是 K8s 中最小的调度单元。一个 Pod 可以包含一个或多个容器，它们共享网络命名空间和存储卷。
+
+什么时候该用多容器 Pod？最常见的模式是 sidecar。比如在应用 Pod 旁边放一个日志收集容器，或者放一个 envoy 代理做服务网格。但不要把不相关的服务塞到同一个 Pod 里——它们应该独立扩缩容。
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-app
+  labels:
+    app: my-app
+spec:
+  containers:
+  - name: app
+    image: my-app:1.0
+    ports:
+    - containerPort: 8080
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+  - name: sidecar-log-agent
+    image: log-agent:1.0
+```
+
+### 2.2 资源请求与限制
+
+resources.requests 告诉调度器这个 Pod 需要多少资源，resources.limits 告诉 K8s 这个 Pod 最多能用多少资源。requests 影响调度决策，limits 影响运行时行为。
+
+CPU 超限不会被杀掉，只会被限流。内存超限会触发 OOMKilled。这个区别很重要——很多"我的 Pod 怎么被杀了"的问题都是因为内存 limits 设太低。
+
+### 2.3 调度策略
+
+Kubernetes 的调度器根据多种因素来决定 Pod 运行在哪个节点：资源可用性、亲和性/反亲和性、污点和容忍、拓扑约束。
+
+```yaml
+# 节点亲和性：只调度到有 SSD 的节点
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: disk-type
+          operator: In
+          values:
+          - ssd
+
+# Pod 反亲和性：同一 Deployment 的 Pod 分散到不同节点
+podAntiAffinity:
+  preferredDuringSchedulingIgnoredDuringExecution:
+  - weight: 100
+    podAffinityTerm:
+      labelSelector:
+        matchExpressions:
+        - key: app
+          operator: In
+          values:
+          - my-app
+      topologyKey: kubernetes.io/hostname
+```
+
+### 2.4 污点与容忍
+
+Taint 和 Toleration 配合使用。Taint 加在节点上，表示"不容忍这个 taint 的 Pod 不能调度到这个节点"。Toleration 加在 Pod 上，表示"我可以容忍这个 taint"。
+
+```bash
+# 给节点加 taint
+kubectl taint nodes node1 dedicated=gpu:NoSchedule
+
+# Pod 需要 toleration 才能调度到这个节点
+```
+
+---
+
+## 三、工作负载
+
+### 3.1 Deployment
+
+Deployment 管理无状态应用的副本集。它支持滚动更新和回滚。
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: app
+        image: my-app:2.0
+        ports:
+        - containerPort: 8080
+```
+
+maxSurge 和 maxUnavailable 的设置很关键。maxUnavailable 设为 0 确保更新过程中始终有足够的 Pod 在服务请求。
+
+### 3.2 StatefulSet
+
+StatefulSet 管理有状态应用。每个 Pod 有稳定的网络标识（pod-0, pod-1, ...）和持久的存储。数据库、消息队列、ZooKeeper 这类需要稳定标识的服务应该用 StatefulSet。
+
+### 3.3 DaemonSet
+
+DaemonSet 确保每个节点（或指定节点）运行一个 Pod。日志收集、监控代理、网络插件这些基础设施组件适合用 DaemonSet。
+
+### 3.4 Job 和 CronJob
+
+Job 运行一次性任务，CronJob 按计划运行任务。批处理任务、数据迁移、定时备份适合用这些资源。
+
+---
+
+## 四、服务发现与网络
+
+### 4.1 Service 类型
+
+- **ClusterIP**（默认）：只在集群内部可达
+- **NodePort**：在每个节点上开放一个端口
+- **LoadBalancer**：创建云厂商的负载均衡器
+- **ExternalName**：映射到外部 DNS 名称
+
+大多数微服务之间的通信用 ClusterIP 就够了。只有需要外部访问的服务才用 LoadBalancer 或 NodePort。
+
+### 4.2 Ingress
+
+Ingress 是 HTTP 层的路由规则，把外部流量转发到集群内的 Service。Nginx Ingress Controller、Traefik、HAProxy 是常用的 Ingress Controller。
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: api.example.com
+    http:
+      paths:
+      - path: /v1
+        pathType: Prefix
+        backend:
+          service:
+            name: api-v1
+            port:
+              number: 80
+      - path: /v2
+        pathType: Prefix
+        backend:
+          service:
+            name: api-v2
+            port:
+              number: 80
+```
+
+### 4.3 Network Policy
+
+NetworkPolicy 是集群内部的防火墙规则，控制 Pod 之间的通信。默认情况下所有 Pod 之间都能互相通信，这在生产环境是不安全的。
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+```
+
+---
+
+## 五、配置管理与 Secrets
+
+### 5.1 ConfigMap
+
+ConfigMap 存储非敏感的配置数据。可以通过环境变量或挂载文件的方式注入到 Pod 中。
+
+### 5.2 Secrets
+
+Secrets 存储敏感数据（密码、密钥、证书）。注意：Secrets 默认只是 base64 编码，不是加密。生产环境应该启用 etcd 加密或使用外部密钥管理（如 Vault）。
+
+---
+
+## 六、存储
+
+### 6.1 Persistent Volume
+
+PV（Persistent Volume）是集群级别的存储资源，PVC（Persistent Volume Claim）是 Pod 对存储的申请。StorageClass 定义了存储的类型和供应方式。
+
+有状态应用（数据库、消息队列）必须使用持久化存储。无状态应用如果需要缓存或临时数据，可以用 emptyDir。
+
+---
+
+## 七、Helm
+
+### 7.1 为什么用 Helm
+
+Helm 是 K8s 的包管理器。它把相关的 K8s 资源打包成 Chart，支持模板化、版本管理和一键部署。没有 Helm 的话，管理几十个微服务的 K8s 清单文件是噩梦。
+
+### 7.2 Chart 结构
+
+```yaml
+my-chart/
+  Chart.yaml
+  values.yaml
+  templates/
+    deployment.yaml
+    service.yaml
+    ingress.yaml
+    configmap.yaml
+```
+
+values.yaml 定义默认配置，templates 下的文件用 Go 模板语法渲染。
+
+### 7.3 Helm 最佳实践
+
+把 Chart 发布到私有仓库（如 Harbor），每次部署使用特定版本号。不要在生产环境用 `latest` tag。用 `helm diff` 查看变更再部署。
+
+---
+
+## 八、监控与日志
+
+### 8.1 Prometheus + Grafana
+
+Prometheus 是 K8s 生态中最常用的监控方案。它通过 Service Discovery 自动发现集群中的 Pod 和 Service，抓取指标数据。Grafana 提供可视化面板。
+
+### 8.2 日志收集
+
+EFK（Elasticsearch + Fluentd + Kibana）或 PLG（Promtail + Loki + Grafana）是两种主流的日志方案。Fluentd/Promtail 作为 DaemonSet 运行在每个节点上，收集容器日志。
+
+---
+
+## 九、安全
+
+### 9.1 RBAC
+
+Role-Based Access Control 控制谁可以对哪些资源执行哪些操作。最小权限原则：只给用户和程序需要的最小权限。
+
+### 9.2 Pod Security Standards
+
+Kubernetes 1.25+ 移除了 PodSecurityPolicy，用 Pod Security Admission 替代。它定义了三个级别：privileged、baseline、restricted。
+
+### 9.3 镜像安全
+
+使用 Trivy 扫描镜像漏洞；只从可信的 Registry 拉取镜像；使用 ImagePolicyWebhook 禁止使用 latest tag。
+
+---
+
+## 十、GitOps
+
+### 10.1 ArgoCD
+
+ArgoCD 是 K8s 原生的 GitOps 工具。它监听 Git 仓库的变化，自动同步集群状态到 Git 中定义的期望状态。
+
+### 10.2 Flux
+
+Flux 是另一个流行的 GitOps 工具，由 Weaveworks 开发。它的架构更模块化，支持多种来源（Git、Helm、OCI）。
+
+---
+
+## 结尾
+
+Kubernetes 的学习曲线很陡，但一旦你的集群稳定运行起来，它带来的效率提升是显著的。从一个小集群开始，先把无状态服务迁移上去，积累经验后再处理有状态服务。不要试图一步到位——K8s 生态太庞大了，一步一步来。
+$doc$,
+    NULL,
+    'published',
+    NOW() - INTERVAL '14 days',
+    NOW() - INTERVAL '14 days',
+    NOW() - INTERVAL '14 days'
+),
+(
+    1,
+    'Redis 数据结构与实战应用完全指南',
+    'redis-complete-guide',
+    '从底层数据结构到分布式集群，覆盖 Redis 五种基础数据结构、发布订阅、Lua 脚本、持久化机制、集群方案和性能优化实践。',
+    $doc$
+# Redis 数据结构与实战应用完全指南
+
+## 前言
+
+我第一次用 Redis 是因为一个简单的需求：给接口加个计数器，限制用户每分钟最多请求 60 次。用数据库做计数器，每次请求都要 UPDATE 一行记录，在高并发下数据库很快就扛不住了。换成 Redis 的 INCR 命令，问题瞬间解决。
+
+后来我发现 Redis 能做的事情远不止计数器。缓存、会话存储、消息队列、分布式锁、排行榜、地理位置——几乎每个 Web 应用都能从 Redis 中受益。但要用好 Redis，你需要理解它的数据结构和内部实现。
+
+---
+
+## 一、Redis 基础
+
+### 1.1 为什么 Redis 这么快
+
+几个原因：纯内存操作、单线程模型（避免了锁竞争）、IO 多路复用（epoll）、高效的数据结构（SDS、ziplist、quicklist、skiplist、intset、hashtable）。
+
+Redis 6.0 引入了多线程 IO，但核心的命令执行仍然是单线程。这保证了原子性，不需要加锁。
+
+### 1.2 安装与配置
+
+```bash
+# macOS
+brew install redis
+
+# 启动
+redis-server
+
+# 连接
+redis-cli
+```
+
+关键配置项：
+
+```conf
+# 绑定地址
+bind 127.0.0.1
+
+# 保护模式
+protected-mode yes
+
+# 端口
+port 6379
+
+# 数据库数量
+databases 16
+
+# 密码
+requirepass your-password
+
+# 最大内存
+maxmemory 1gb
+
+# 内存淘汰策略
+maxmemory-policy allkeys-lru
+```
+
+---
+
+## 二、五种基础数据结构
+
+### 2.1 String
+
+String 是最基础的数据类型。可以存储字符串、整数、浮点数，以及二进制数据（最大 512MB）。
+
+```bash
+# 基本操作
+SET key value
+GET key
+MSET key1 value1 key2 value2
+MGET key1 key2
+
+# 原子操作
+INCR counter          # +1
+INCRBY counter 10     # +10
+DECR counter          # -1
+APPEND key "world"    # 追加
+
+# 设置过期时间
+SET token abc123 EX 3600    # 1小时过期
+SETNX key value             # 不存在时设置（分布式锁基础）
+```
+
+String 的应用场景：缓存、会话存储、分布式锁、计数器、限流。
+
+### 2.2 Hash
+
+Hash 是键值对的集合，适合存储对象。
+
+```bash
+# 存储用户信息
+HSET user:1001 name "Alice" email "alice@example.com" age 30
+
+# 获取字段值
+HGET user:1001 name
+
+# 获取所有字段
+HGETALL user:1001
+
+# 检查字段是否存在
+HEXISTS user:1001 email
+
+# 增加数字字段
+HINCRBY user:1001 age 1
+```
+
+Hash 相比 String 存储对象的优势：可以只读写部分字段，不需要序列化整个对象。当字段少的时候，Redis 用 ziplist 存储，内存效率很高。
+
+### 2.4 List
+
+List 是有序的字符串列表，支持从两端插入和弹出。
+
+```bash
+# 从右端推入
+RPUSH queue task1 task2 task3
+
+# 从左端弹出
+LPOP queue
+
+# 阻塞弹出（队列为空时等待）
+BLPOP queue 30    # 最多等待30秒
+
+# 获取范围
+LRANGE queue 0 -1    # 获取所有元素
+LRANGE queue 0 9     # 获取前10个元素
+
+# 修剪列表
+LTRIM queue 0 99    # 只保留前100个元素
+```
+
+List 的应用场景：消息队列、任务队列、最新动态列表。BLPOP 可以实现简单的阻塞队列。
+
+### 2.5 Set
+
+Set 是无序的字符串集合，支持交集、并集、差集运算。
+
+```bash
+# 添加元素
+SADD tags:post:1 "redis" "database" "cache"
+
+# 检查元素是否存在
+SISMEMBER tags:post:1 "redis"
+
+# 获取所有元素
+SMEMBERS tags:post:1
+
+# 交集（共同标签）
+SINTER tags:post:1 tags:post:2
+
+# 并集
+SUNION tags:post:1 tags:post:2
+
+# 差集
+SDIFF tags:post:1 tags:post:2
+```
+
+Set 的应用场景：标签系统、好友关系、去重、抽奖。
+
+### 2.6 Sorted Set（ZSet）
+
+ZSet 是有序的字符串集合，每个元素关联一个分数（score），按分数排序。
+
+```bash
+# 添加元素
+ZADD leaderboard 100 "player:1" 200 "player:2" 150 "player:3"
+
+# 获取排名（分数从高到低）
+ZREVRANGE leaderboard 0 9 WITHSCORES
+
+# 获取某人的排名
+ZREVRANK leaderboard "player:1"
+
+# 增加分数
+ZINCRBY leaderboard 50 "player:1"
+
+# 按分数范围查询
+ZRANGEBYSCORE leaderboard 100 200
+```
+
+ZSet 的应用场景：排行榜、延迟队列（score 存时间戳）、范围查询。
+
+---
+
+## 三、高级数据结构
+
+### 3.1 HyperLogLog
+
+HyperLogLog 用于基数统计（统计集合中不同元素的数量）。它的优势是无论集合有多少元素，始终只占用 12KB 内存。
+
+```bash
+# 统计 UV（独立访客）
+PFADD uv:20240101 "user1" "user2" "user3"
+PFADD uv:20240101 "user1" "user4"    # user1 重复，不计数
+
+# 获取 UV 数
+PFCOUNT uv:20240101    # 返回 4
+```
+
+### 3.2 Bitmap
+
+Bitmap 是位数组，可以对位进行操作。
+
+```bash
+# 签到打卡
+SETBIT sign:user:1001:202401 0 1    # 第1天打卡
+SETBIT sign:user:1001:202401 1 1    # 第2天打卡
+
+# 统计打卡天数
+BITCOUNT sign:user:1001:202401
+
+# 判断某天是否打卡
+GETBIT sign:user:1001:202401 0
+```
+
+### 3.3 Stream
+
+Stream 是 Redis 5.0 引入的消息队列数据结构，支持消费者组、消息确认、消息持久化。
+
+```bash
+# 发送消息
+XADD mystream * name "Alice" action "login"
+
+# 读取消息
+XREAD COUNT 10 STREAMS mystream 0
+
+# 创建消费者组
+XGROUP CREATE mystream mygroup $ MKSTREAM
+
+# 消费者读取
+XREADGROUP GROUP mygroup consumer1 COUNT 1 STREAMS mystream >
+
+# 确认消息
+XACK mystream mygroup 1234567890-0
+```
+
+Stream 相比 List 实现的消息队列的优势：支持消费者组、消息确认、消息持久化、回溯消费。
+
+---
+
+## 四、过期与淘汰策略
+
+### 4.1 设置过期时间
+
+```bash
+# 设置过期时间
+EXPIRE key 3600        # 1小时
+PEXPIRE key 3600000    # 1小时（毫秒）
+
+# 设置带过期时间的值
+SETEX key 3600 value
+
+# 查看剩余过期时间
+TTL key
+
+# 取消过期时间
+PERSIST key
+```
+
+### 4.2 内存淘汰策略
+
+当 Redis 内存达到 maxmemory 时，根据策略淘汰键：
+
+- **noeviction**：不淘汰，写入操作报错
+- **allkeys-lru**：淘汰所有键中最久未使用的
+- **volatile-lru**：淘汰设有过期时间的键中最久未使用的
+- **allkeys-random**：随机淘汰
+- **volatile-random**：随机淘汰设有过期时间的键
+- **volatile-ttl**：淘汰设有过期时间且 TTL 最小的键
+- **allkeys-lfu**：淘汰所有键中最不经常使用的
+- **volatile-lfu**：淘汰设有过期时间的键中最不经常使用的
+
+大多数场景用 allkeys-lru 或 allkeys-lfu。
+
+---
+
+## 五、持久化机制
+
+### 5.1 RDB
+
+RDB 是快照持久化，在指定时间间隔内把内存数据写入磁盘。
+
+```conf
+# redis.conf
+save 900 1      # 900秒内有1次写入就触发快照
+save 300 10     # 300秒内有10次写入就触发快照
+save 60 10000   # 60秒内有10000次写入就触发快照
+```
+
+RDB 的优点是恢复速度快，缺点是有数据丢失风险（最后一次快照到宕机之间的数据）。
+
+### 5.2 AOF
+
+AOF 记录每个写操作命令，Redis 重启时重放命令恢复数据。
+
+```conf
+# redis.conf
+appendonly yes
+appendfsync everysec    # 每秒同步一次
+```
+
+AOF 的优点是数据丢失少（最多丢1秒数据），缺点是文件体积大、恢复速度慢。
+
+### 5.3 混合持久化
+
+Redis 4.0+ 支持混合持久化：AOF 重写时，先写入 RDB 格式的全量数据，再追加增量 AOF 命令。
+
+---
+
+## 六、发布订阅
+
+```bash
+# 订阅频道
+SUBSCRIBE news
+
+# 发布消息
+PUBLISH news "Breaking news: ..."
+
+# 模式订阅
+PSUBSCRIBE news.*
+```
+
+Pub/Sub 的问题是消息不持久化，订阅者离线期间的消息会丢失。如果需要可靠的消息传递，用 Stream。
+
+---
+
+## 七、Lua 脚本
+
+Redis 支持在服务端执行 Lua 脚本，可以实现原子操作。
+
+```bash
+# 原子操作：检查并设置
+EVAL "
+  if redis.call('GET', KEYS[1]) == ARGV[1] then
+    return redis.call('SET', KEYS[2], ARGV[2])
+  else
+    return 0
+  end
+" 2 key1 key2 old_value new_value
+```
+
+Lua 脚本在 Redis 中是原子执行的，不需要加锁。分布式锁的实现常用 Lua 脚本来保证检查和设置的原子性。
+
+---
+
+## 八、分布式锁
+
+### 8.1 基本实现
+
+```bash
+# 加锁（原子操作）
+SET lock:order:123 owner-uuid NX EX 30
+
+# 解锁（需要原子检查）
+EVAL "
+  if redis.call('GET', KEYS[1]) == ARGV[1] then
+    return redis.call('DEL', KEYS[1])
+  else
+    return 0
+  end
+" 1 lock:order:123 owner-uuid
+```
+
+### 8.2 Redlock 算法
+
+单个 Redis 实例的分布式锁在主从切换时可能丢失锁。Redlock 算法通过在多个独立的 Redis 实例上加锁来提高可靠性。
+
+但 Redlock 也有争议。Martin Kleppmann 在他的文章中指出了 Redlock 的几个潜在问题，包括时钟漂移和 GC 暂停。实际使用中，大多数场景单实例 Redis 锁加上合理的过期时间就够了。
+
+---
+
+## 九、集群方案
+
+### 9.1 Redis Sentinel
+
+Sentinel 是 Redis 的高可用方案。它监控主从节点的状态，主节点挂掉时自动故障转移。
+
+Sentinel 的优点是部署简单，缺点是不能水平扩展（数据量受限于单机内存）。
+
+### 9.2 Redis Cluster
+
+Cluster 是 Redis 的分布式方案，数据分片存储在多个节点上。16384 个哈希槽分布在多个节点上。
+
+Cluster 的优点是支持水平扩展，缺点是有些命令受限（如多 key 操作需要使用 hash tag）。
+
+---
+
+## 十、性能优化
+
+### 10.1 Pipeline
+
+Pipeline 把多个命令打包发送，减少网络往返。
+
+```python
+import redis
+
+r = redis.Redis()
+pipe = r.pipeline()
+for i in range(10000):
+    pipe.set(f'key:{i}', f'value:{i}')
+pipe.execute()
+```
+
+### 10.2 大 Key 问题
+
+大 Key 会导致阻塞、内存不均衡、网络拥塞。用 `redis-cli --bigkeys` 扫描大 Key。
+
+### 10.3 热 Key 问题
+
+热 Key 是访问频率特别高的 Key，会导致单节点过载。解决方案：本地缓存、Key 分散（加后缀）、读写分离。
+
+---
+
+## 结尾
+
+Redis 的强大在于它的灵活性。理解了五种基础数据结构和它们的内部实现，你就能用 Redis 解决各种各样的问题。不要把 Redis 当成万能的——它最适合的场景是读多写少、数据量不太大、对延迟敏感的场景。
+$doc$,
+    NULL,
+    'published',
+    NOW() - INTERVAL '13 days',
+    NOW() - INTERVAL '13 days',
+    NOW() - INTERVAL '13 days'
+),
+(
+    1,
+    'PostgreSQL 高级特性与性能优化实战',
+    'postgresql-advanced',
+    '从索引原理到查询优化，从 JSONB 到全文搜索，从分区表到复制高可用，深入讲解 PostgreSQL 高级特性和生产环境调优。',
+    $doc$
+# PostgreSQL 高级特性与性能优化实战
+
+## 前言
+
+我从 MySQL 转到 PostgreSQL 是因为一个需求：需要在数据库层面做全文搜索，同时还要支持 JSON 数据的灵活查询。MySQL 能做，但 PostgreSQL 做得更好。用了几年之后，我发现 PostgreSQL 的能力远不止这些——窗口函数、CTE、JSONB、分区表、物化视图、逻辑复制，每一个特性在特定场景下都能带来巨大的价值。
+
+这篇文章是我使用 PostgreSQL 的经验总结，重点放在那些在实际项目中经常用到的高级特性和性能优化技巧。
+
+---
+
+## 一、索引深入理解
+
+### 1.1 B-Tree 索引
+
+B-Tree 是 PostgreSQL 最常用的索引类型。它适合等值查询和范围查询。
+
+```sql
+-- 创建索引
+CREATE INDEX idx_users_email ON users (email);
+
+-- 复合索引
+CREATE INDEX idx_orders_user_status ON orders (user_id, status);
+
+-- 部分索引（只索引满足条件的行）
+CREATE INDEX idx_orders_pending ON orders (created_at) WHERE status = 'pending';
+```
+
+部分索引的好处：只索引需要的部分，减少索引大小，提高写入性能。
+
+### 1.2 GIN 索引
+
+GIN（Generalized Inverted Index）是倒排索引，适合全文搜索和 JSONB 查询。
+
+```sql
+-- 全文搜索索引
+CREATE INDEX idx_posts_search ON posts USING GIN (
+  to_tsvector('english', title || ' ' || content)
+);
+
+-- JSONB 索引
+CREATE INDEX idx_events_data ON events USING GIN (data);
+
+-- JSONB 路径索引
+CREATE INDEX idx_events_type ON events USING BTREE ((data ->> 'type'));
+```
+
+### 1.3 GiST 索引
+
+GiST（Generalized Search Tree）适合几何数据、范围类型和全文搜索。
+
+```sql
+-- 地理位置索引
+CREATE INDEX idx_locations_coords ON locations USING GiST (coords);
+
+-- 范围类型索引
+CREATE INDEX idx_events_period ON events USING GiST (period);
+```
+
+### 1.4 BRIN 索引
+
+BRIN（Block Range Index）适合物理顺序和逻辑顺序一致的大表。比如按时间插入的日志表。
+
+```sql
+-- BRIN 索引，体积小但对有序数据效果好
+CREATE INDEX idx_logs_created ON logs USING BRIN (created_at);
+```
+
+BRIN 索引的优势是体积小（通常是 B-Tree 的几分之一），创建速度快。对于 TB 级的日志表，BRIN 索引比 B-Tree 索引更合适。
+
+---
+
+## 二、查询优化
+
+### 2.1 EXPLAIN ANALYZE
+
+EXPLAIN ANALYZE 是优化查询最重要的工具。它会实际执行查询并显示执行计划。
+
+```sql
+EXPLAIN ANALYZE
+SELECT * FROM orders WHERE user_id = 123 AND status = 'pending';
+```
+
+关键指标：
+- **Seq Scan**：全表扫描，大表上要避免
+- **Index Scan**：使用索引扫描
+- **Bitmap Index Scan**：位图索引扫描，介于两者之间
+- **Rows**：估算的行数 vs 实际行数，差距大说明统计信息不准
+- **actual time**：实际执行时间
+
+### 2.2 统计信息
+
+PostgreSQL 的查询优化器依赖统计信息来生成执行计划。如果统计信息不准确，优化器可能选择错误的执行计划。
+
+```sql
+-- 更新统计信息
+ANALYZE users;
+
+-- 查看统计信息
+SELECT * FROM pg_stats WHERE tablename = 'users';
+
+-- 增加统计采样精度
+ALTER TABLE users ALTER COLUMN email SET STATICS 1000;
+```
+
+### 2.3 查询调优参数
+
+```sql
+-- 工作内存（排序和哈希操作使用）
+SET work_mem = '256MB';
+
+-- 有效缓存大小（告诉优化器系统可用的缓存大小）
+SET effective_cache_size = '8GB';
+
+-- 并行查询
+SET max_parallel_workers_per_gather = 4;
+```
+
+---
+
+## 三、高级 SQL 特性
+
+### 3.1 窗口函数
+
+窗口函数在不减少结果行数的情况下进行聚合计算。
+
+```sql
+-- 排名
+SELECT name, score,
+  RANK() OVER (ORDER BY score DESC) as rank,
+  DENSE_RANK() OVER (ORDER BY score DESC) as dense_rank,
+  ROW_NUMBER() OVER (ORDER BY score DESC) as row_num
+FROM students;
+
+-- 分组排名
+SELECT name, department, salary,
+  RANK() OVER (PARTITION BY department ORDER BY salary DESC) as dept_rank
+FROM employees;
+
+-- 移动平均
+SELECT date, revenue,
+  AVG(revenue) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) as moving_avg_7d
+FROM daily_revenue;
+```
+
+### 3.2 CTE（Common Table Expression）
+
+CTE 让复杂查询更易读，支持递归查询。
+
+```sql
+-- 普通 CTE
+WITH active_users AS (
+  SELECT id, name FROM users WHERE last_login > NOW() - INTERVAL '30 days'
+)
+SELECT * FROM active_users WHERE name LIKE 'A%';
+
+-- 递归 CTE（组织架构树）
+WITH RECURSIVE org_tree AS (
+  SELECT id, name, manager_id, 1 as level
+  FROM employees WHERE manager_id IS NULL
+  
+  UNION ALL
+  
+  SELECT e.id, e.name, e.manager_id, t.level + 1
+  FROM employees e
+  JOIN org_tree t ON e.manager_id = t.id
+)
+SELECT * FROM org_tree ORDER BY level, name;
+```
+
+### 3.3 LATERAL JOIN
+
+LATERAL JOIN 让右边的子查询可以引用左边的结果。
+
+```sql
+-- 获取每个用户最近的3个订单
+SELECT u.name, recent.*
+FROM users u
+CROSS JOIN LATERAL (
+  SELECT * FROM orders o
+  WHERE o.user_id = u.id
+  ORDER BY o.created_at DESC
+  LIMIT 3
+) recent;
+```
+
+### 3.4 UPSERT
+
+```sql
+-- INSERT 或 UPDATE（如果冲突）
+INSERT INTO page_views (page_id, views)
+VALUES ('/home', 1)
+ON CONFLICT (page_id) DO UPDATE
+SET views = page_views.views + 1;
+```
+
+---
+
+## 四、JSONB 操作
+
+### 4.1 JSONB 存储与查询
+
+```sql
+-- 插入 JSONB
+INSERT INTO events (data)
+VALUES ('{"type": "click", "target": "button", "metadata": {"browser": "chrome"}}');
+
+-- 查询 JSONB 字段
+SELECT data ->> 'type' as event_type FROM events;
+SELECT data -> 'metadata' ->> 'browser' as browser FROM events;
+
+-- 条件过滤
+SELECT * FROM events WHERE data ->> 'type' = 'click';
+
+-- JSONB 包含查询
+SELECT * FROM events WHERE data @> '{"type": "click"}';
+
+-- JSONB 数组查询
+SELECT * FROM events WHERE data -> 'tags' ? 'important';
+```
+
+### 4.2 JSONB 索引
+
+```bash
+# GIN 索引支持 @>, ?, ?|, ?& 操作符
+CREATE INDEX idx_events_data ON events USING GIN (data);
+
+# BTREE 索引支持 ->>, -> 操作符
+CREATE INDEX idx_events_type ON events USING BTREE ((data ->> 'type'));
+```
+
+### 4.3 JSONB 聚合
+
+```sql
+-- JSONB 聚合
+SELECT jsonb_agg(jsonb_build_object('name', name, 'score', score))
+FROM students;
+
+-- JSONB 对象聚合
+SELECT jsonb_object_agg(id, name) FROM users;
+```
+
+---
+
+## 五、全文搜索
+
+### 5.1 基本用法
+
+```sql
+-- 创建 tsvector 列
+ALTER TABLE posts ADD COLUMN search_vector tsvector;
+
+-- 填充搜索向量
+UPDATE posts SET search_vector =
+  to_tsvector('english', coalesce(title, '') || ' ' || coalesce(content, ''));
+
+-- 创建 GIN 索引
+CREATE INDEX idx_posts_search ON posts USING GIN (search_vector);
+
+-- 搜索
+SELECT * FROM posts WHERE search_vector @@ to_tsquery('english', 'database & performance');
+```
+
+### 5.2 中文全文搜索
+
+PostgreSQL 原生不支持中文分词，需要安装 zhparser 或 pg_jieba 扩展。
+
+---
+
+## 六、分区表
+
+### 6.1 声明式分区
+
+```sql
+-- 按范围分区
+CREATE TABLE logs (
+  id BIGSERIAL,
+  created_at TIMESTAMPTZ NOT NULL,
+  level TEXT,
+  message TEXT
+) PARTITION BY RANGE (created_at);
+
+-- 创建分区
+CREATE TABLE logs_2024_01 PARTITION OF logs
+  FOR VALUES FROM ('2024-01-01') TO ('2024-02-01');
+
+CREATE TABLE logs_2024_02 PARTITION OF logs
+  FOR VALUES FROM ('2024-02-01') TO ('2024-03-01');
+
+-- 自动创建分区（使用 pg_partman 扩展）
+```
+
+### 6.2 分区裁剪
+
+PostgreSQL 的查询优化器会自动进行分区裁剪——只扫描相关的分区。但如果查询条件中没有分区键，会扫描所有分区。
+
+---
+
+## 七、复制与高可用
+
+### 7.1 流复制
+
+流复制（Streaming Replication）是 PostgreSQL 内置的物理复制方案。主库把 WAL 日志流式发送给从库，从库重放日志保持数据一致。
+
+### 7.2 逻辑复制
+
+逻辑复制（Logical Replication）可以复制特定的表，支持不同大版本之间的复制。
+
+```sql
+-- 发布端
+CREATE PUBLICATION my_pub FOR TABLE orders, users;
+
+-- 订阅端
+CREATE SUBSCRIPTION my_sub
+  CONNECTION 'host=primary-db dbname=mydb'
+  PUBLICATION my_pub;
+```
+
+### 7.3 Patroni 高可用
+
+Patroni 是目前最流行的 PostgreSQL 高可用方案，基于 DCS（如 etcd、Consul）实现自动故障转移。
+
+---
+
+## 八、扩展
+
+### 8.1 常用扩展
+
+- **pg_stat_statements**：查询性能分析
+- **pg_trgm**：模糊搜索加速
+- **PostGIS**：地理空间数据
+- **TimescaleDB**：时序数据库
+- **Citus**：分布式 PostgreSQL
+- **pgvector**：向量搜索（AI 相似度搜索）
+
+### 8.2 pg_stat_statements
+
+```sql
+-- 启用
+CREATE EXTENSION pg_stat_statements;
+
+-- 查看最慢的查询
+SELECT query, calls, mean_exec_time, total_exec_time
+FROM pg_stat_statements
+ORDER BY mean_exec_time DESC
+LIMIT 20;
+```
+
+---
+
+## 九、性能优化清单
+
+1. 使用 EXPLAIN ANALYZE 分析慢查询
+2. 创建合适的索引（部分索引、复合索引）
+3. 定期 VACUUM 和 ANALYZE
+4. 调整 work_mem 和 effective_cache_size
+5. 避免 SELECT *
+6. 使用连接池（PgBouncer）
+7. 监控 pg_stat_activity 发现慢查询
+8. 定期检查索引使用率，删除无用索引
+
+---
+
+## 结尾
+
+PostgreSQL 是一个功能极其丰富的数据库。掌握这些高级特性能让你在面对复杂需求时游刃有余。但记住，最好的优化是选择合适的架构——不要用数据库做它不擅长的事情。
+$doc$,
+    NULL,
+    'published',
+    NOW() - INTERVAL '12 days',
+    NOW() - INTERVAL '12 days',
+    NOW() - INTERVAL '12 days'
+),
+(
+    1,
+    'React 18 新特性与现代前端架构实战',
+    'react18-guide',
+    '从 Concurrent Rendering 到 Server Components，覆盖 React 18 核心 API 与大型项目架构实践',
+    $doc$
+# React 18 新特性与现代前端架构实战
+
+## 写在前面
+
+去年我们团队把一个日活过百万的 C 端产品从 React 16 迁移到 React 18，前后花了将近四个月。过程中踩了不少坑，也积累了一些经验。这篇文章不是官方文档的复述，而是基于真实项目经验，把 React 18 中我认为最关键的改动梳理出来。
+
+React 18 发布于 2022 年 3 月，这是 React 自 2017 年 16.0 以来最大的一次架构变革。核心变化集中在三个方面：并发渲染、自动批处理、以及流式 SSR。
+
+## 并发渲染：React 调度机制的根本变化
+
+### 什么是 Concurrent Mode
+
+React 16 的渲染是同步的——一旦开始渲染，就会一直执行到完成，期间主线程被占用。如果组件树很大，用户交互就会卡顿。
+
+React 18 引入了并发渲染（Concurrent Rendering），本质上是给 React 的 reconciler 加了一个优先级调度器。不同类型的更新可以被打断、暂停、恢复，高优先级的更新（比如用户点击）可以插队到低优先级更新（比如数据预取）前面。
+
+```tsx
+// React 17
+import ReactDOM from 'react-dom';
+ReactDOM.render(<App />, document.getElementById('root'));
+
+// React 18
+import { createRoot } from 'react-dom/client';
+const root = createRoot(document.getElementById('root'));
+root.render(<App />);
+```
+
+切换到 `createRoot` 之后，React 18 默认开启所有并发特性。
+
+### Rendering 与 Committing 的分离
+
+要理解并发渲染，需要分清两个阶段：Render 阶段调用组件函数计算虚拟 DOM 树的 diff，可以被打断和重试；Commit 阶段把计算结果批量应用到真实 DOM，是同步不可中断的。
+
+## Transitions：控制更新优先级的 API
+
+### useTransition
+
+`useTransition` 让你把一个状态更新标记为"过渡"，告诉 React 这个更新可以被中断，优先处理更紧急的更新。
+
+```tsx
+import { useState, useTransition } from 'react';
+
+function SearchPage() {
+  const [query, setQuery] = useState('');
+  const [isPending, startTransition] = useTransition();
+
+  function handleChange(e) {
+    setQuery(e.target.value);
+    startTransition(() => {
+      setSearchResults(filterData(e.target.value));
+    });
+  }
+
+  return (
+    <div>
+      <input value={query} onChange={handleChange} />
+      {isPending && <Spinner />}
+      <Results data={searchResults} />
+    </div>
+  );
+}
+```
+
+没有 `useTransition` 的时候，每次输入都会触发一次完整的 re-render。用了 `useTransition` 之后，输入框的响应是即时的，搜索结果的更新可以在空闲时处理。
+
+### useDeferredValue
+
+`useDeferredValue` 和 `useTransition` 做的事情类似，但用法不同。它接受一个值，返回一个延迟版本的值。当你无法控制上游传入的值时，它特别有用。
+
+## Suspense：声明式的加载状态管理
+
+### Suspense 的工作原理
+
+Suspense 本质上是一个边界声明。当子树中有组件还在等待异步操作时，React 会渲染 fallback；异步操作完成后，React 用实际内容替换 fallback。
+
+React 18 扩展了 Suspense 的能力，让它支持数据加载场景。原理是当组件在 render 过程中抛出一个 Promise 时，React 会捕获它，暂停渲染，等 Promise resolve 后再恢复。
+
+### Suspense 边界的设计
+
+在大型应用中，Suspense 边界放哪里直接影响用户体验。放得太外层，整个页面都会显示 loading；放得太里层，fallback 切换会很频繁，造成视觉闪烁。
+
+我的经验是在路由级别放一个 Suspense 边界，然后在页面内部按模块粒度放二级边界。
+
+## 流式 SSR 与 Hydration
+
+React 18 的流式 SSR 基于 `renderToPipeableStream`。配合 Suspense，服务端可以在组件数据还没准备好时先发送 HTML shell 和 loading 状态，数据就绪后再通过内联 `<script>` 标签追加内容。
+
+## 自动批处理：减少不必要的 re-render
+
+React 18 把批处理扩展到了所有场景——事件处理、Promise、setTimeout、原生事件，一律合并为一次 re-render。
+
+```tsx
+// React 18
+async function fetchData() {
+  const result = await fetch('/api/data');
+  // 只有一次 re-render
+  setData(result);
+  setLoading(false);
+}
+```
+
+## 新 Hooks 详解
+
+### useId
+
+`useId` 生成一个在服务端和客户端之间保持一致的唯一 ID，解决了 SSR 中 ID 不匹配的问题。
+
+### useSyncExternalStore
+
+`useSyncExternalStore` 订阅外部数据源，保证在并发模式下不会出现撕裂。Redux、Zustand、Jotai 都用它来集成 React 18 的并发特性。
+
+### useInsertionEffect
+
+`useInsertionEffect` 在 DOM 变更前同步执行，用于注入 CSS-in-JS 的样式。绝大多数应用不需要直接使用，它是给 CSS-in-JS 库作者用的。
+
+## 状态管理：Zustand、Jotai 与 Recoil
+
+React 18 的并发特性对状态管理库提出了新要求。Zustand 是目前最轻量的方案，天然兼容 React 18 的并发特性。Jotai 是原子化状态管理方案，适合状态之间有大量派生关系的场景。
+
+## 性能优化
+
+React.memo 对 props 做浅比较，props 没变时跳过 re-render。useMemo 和 useCallback 分别缓存计算结果和函数引用。虚拟化（react-window、@tanstack/react-virtual）只渲染可视区域内的元素。
+
+## Server Components
+
+Server Components 允许组件只在服务端渲染，不发送 JavaScript 到客户端。目前主要通过 Next.js App Router 使用。
+
+## 迁移实战
+
+从 React 16/17 迁移到 React 18，核心步骤是：升级 react 和 react-dom 到 18.x；把 ReactDOM.render 改成 createRoot；检查所有异步上下文中的状态更新；测试第三方库兼容性。
+
+## 总结
+
+React 18 不是一次 API 层面的大改，而是一次架构层面的升级。迁移成本不高，但需要仔细测试。建议先升级到 React 18，然后逐步引入并发特性。
+$doc$,
+    NULL,
+    'published',
+    NOW() - INTERVAL '5 days',
+    NOW() - INTERVAL '5 days',
+    NOW() - INTERVAL '5 days'
+),
+(
+    1,
+    'Vue 3 Composition API 与响应式系统深入',
+    'vue3-composition-api',
+    '从 Reactivity 原理到组件设计模式，深入讲解 Vue 3 Composition API、ref vs reactive、composables 设计和大型项目架构。',
+    $doc$
+# Vue 3 Composition API 与响应式系统深入
+
+## 前言
+
+Vue 3 最重大的变化不是性能提升，而是 Composition API。它改变了我们组织组件逻辑的方式。Options API 在小组件里很清晰，但当一个组件有几百行代码、需要复用多块逻辑时，代码会变得支离破碎——数据在这里，方法在那里，watch 在另一个地方。Composition API 让你可以把相关的逻辑组织在一起，代码的内聚性好得多。
+
+这篇文章不是 API 文档的翻译，我想从实际开发的角度聊一聊 Vue 3 的核心机制和最佳实践。
+
+---
+
+## 一、响应式系统
+
+### 1.1 Proxy vs defineProperty
+
+Vue 2 用 `Object.defineProperty` 实现响应式。它有一个根本限制：只能监听已有属性的读写，不能监听新增/删除属性，也不能监听数组索引和长度。
+
+Vue 3 改用 `Proxy`。Proxy 拦截的是整个对象的操作，包括属性访问、赋值、删除、in 操作符等。
+
+```javascript
+// Vue 2 的限制
+const vm = new Vue({
+  data: { name: 'Alice' }
+});
+vm.age = 25;  // 这个属性不是响应式的
+
+// Vue 3 没有这个限制
+const state = reactive({ name: 'Alice' });
+state.age = 25;  // 完全响应式
+```
+
+### 1.2 ref vs reactive
+
+Vue 3 提供了两种创建响应式状态的方式：`ref` 和 `reactive`。
+
+```javascript
+import { ref, reactive } from 'vue';
+
+// ref：基本类型
+const count = ref(0);
+console.log(count.value);  // 0
+count.value++;             // 修改需要 .value
+
+// reactive：对象类型
+const state = reactive({
+  name: 'Alice',
+  items: [1, 2, 3]
+});
+console.log(state.name);   // 不需要 .value
+state.name = 'Bob';        // 直接修改
+```
+
+一个常见的困惑：什么时候用 ref，什么时候用 reactive？
+
+我的原则：**优先用 ref**。理由：
+- ref 可以包装任何类型，包括基本类型
+- ref 解构后不会丢失响应性（通过 .value 访问）
+- reactive 解构会丢失响应性
+
+```javascript
+// reactive 解构会丢失响应性
+const state = reactive({ count: 0 });
+const { count } = state;  // count 不再是响应式的
+
+// ref 解构不会丢失
+const count = ref(0);
+const myCount = count;  // myCount.value 仍然是响应式的
+```
+
+### 1.3 computed
+
+computed 是派生状态，依赖其他响应式状态自动更新。
+
+```javascript
+import { ref, computed } from 'vue';
+
+const firstName = ref('John');
+const lastName = ref('Doe');
+
+const fullName = computed(() => {
+  return `${firstName.value} ${lastName.value}`;
+});
+
+// computed 也是 ref
+console.log(fullName.value);  // 'John Doe'
+```
+
+computed 有缓存：只有依赖变化时才重新计算。这在处理昂贵计算（如排序、过滤大数组）时很有用。
+
+### 1.4 watch 和 watchEffect
+
+```javascript
+import { ref, watch, watchEffect } from 'vue';
+
+const query = ref('');
+
+// watch：明确指定要监听的源
+watch(query, (newVal, oldVal) => {
+  console.log(`搜索词从 "${oldVal}" 变为 "${newVal}"`);
+  fetchResults(newVal);
+});
+
+// watchEffect：自动追踪依赖
+watchEffect(() => {
+  console.log(`当前搜索词: ${query.value}`);
+  // query.value 变化时自动重新执行
+});
+```
+
+watch 和 watchEffect 的区别：watch 需要明确指定源，可以获取新旧值；watchEffect 自动追踪依赖，更简洁但不能获取旧值。
+
+### 1.5 toRef 和 toRefs
+
+```javascript
+const state = reactive({ name: 'Alice', age: 25 });
+
+// toRef：创建单个属性的 ref
+const nameRef = toRef(state, 'name');
+
+// toRefs：解构所有属性为 ref
+const { name, age } = toRefs(state);
+```
+
+toRefs 在 composable 中特别有用，让你可以从 reactive 对象中解构属性而不丢失响应性。
+
+---
+
+## 二、生命周期
+
+### 2.1 组合式 API 生命周期
+
+```javascript
+import { onMounted, onUpdated, onUnmounted } from 'vue';
+
+// 组件挂载后
+onMounted(() => {
+  console.log('组件已挂载');
+});
+
+// 组件更新后
+onUpdated(() => {
+  console.log('组件已更新');
+});
+
+// 组件卸载前
+onUnmounted(() => {
+  console.log('组件即将卸载');
+});
+```
+
+### 2.2 生命周期钩子对照
+
+- `beforeCreate` → 不需要（setup 本身就是）
+- `created` → 不需要（setup 本身就是）
+- `beforeMount` → `onBeforeMount`
+- `mounted` → `onMounted`
+- `beforeUpdate` → `onBeforeUpdate`
+- `updated` → `onUpdated`
+- `beforeUnmount` → `onBeforeUnmount`
+- `unmounted` → `onUnmounted`
+
+---
+
+## 三、Composables
+
+### 3.1 什么是 Composable
+
+Composable 是利用 Composition API 封装可复用逻辑的函数。它类似于 React Hooks，但有一些关键区别：没有依赖数组，不需要担心闭包陷阱，可以自由使用 reactive 和 ref。
+
+```javascript
+// composables/useCounter.js
+import { ref } from 'vue';
+
+export function useCounter(initialValue = 0) {
+  const count = ref(initialValue);
+  
+  function increment() {
+    count.value++;
+  }
+  
+  function decrement() {
+    count.value--;
+  }
+  
+  function reset() {
+    count.value = initialValue;
+  }
+  
+  return {
+    count,
+    increment,
+    decrement,
+    reset
+  };
+}
+
+// 使用
+const { count, increment, decrement } = useCounter(10);
+```
+
+### 3.2 常用 Composable 模式
+
+**useFetch**：
+
+```javascript
+export function useFetch(url) {
+  const data = ref(null);
+  const error = ref(null);
+  const loading = ref(true);
+
+  fetch(url)
+    .then(res => res.json())
+    .then(json => { data.value = json; })
+    .catch(err => { error.value = err; })
+    .finally(() => { loading.value = false; });
+
+  return { data, error, loading };
+}
+```
+
+**useLocalStorage**：
+
+```javascript
+export function useLocalStorage(key, defaultValue) {
+  const stored = localStorage.getItem(key);
+  const data = ref(stored ? JSON.parse(stored) : defaultValue);
+
+  watch(data, (newVal) => {
+    localStorage.setItem(key, JSON.stringify(newVal));
+  }, { deep: true });
+
+  return data;
+}
+```
+
+### 3.3 Composables vs Mixins
+
+Composables 相比 Vue 2 的 Mixins 的优势：命名清晰（不会出现属性来源不明的问题）、类型推断更好、不会产生命名冲突、可以返回任意类型。
+
+---
+
+## 四、provide / inject
+
+### 4.1 基本用法
+
+```javascript
+// 父组件
+import { provide } from 'vue';
+
+provide('theme', 'dark');
+provide('user', currentUser);
+
+// 子组件
+import { inject } from 'vue';
+
+const theme = inject('theme', 'light');  // 第二个参数是默认值
+const user = inject('user');
+```
+
+### 4.2 响应式 provide
+
+```javascript
+// 父组件
+const theme = ref('dark');
+provide('theme', theme);
+
+// 子组件
+const theme = inject('theme');
+// theme.value 是响应式的
+```
+
+### 4.3 应用全局配置
+
+```javascript
+// app.config.globalProperties
+app.config.globalProperties.$theme = 'dark';
+
+// 在组件中
+const theme = getCurrentInstance().proxy.$theme;
+```
+
+---
+
+## 五、Teleport
+
+Teleport 把组件的 DOM 渲染到指定的目标节点，不受父组件 CSS 的影响。
+
+```vue
+<template>
+  <button @click="showModal = true">打开弹窗</button>
+  
+  <Teleport to="body">
+    <div v-if="showModal" class="modal-overlay">
+      <div class="modal">
+        <p>这是一个弹窗</p>
+        <button @click="showModal = false">关闭</button>
+      </div>
+    </div>
+  </Teleport>
+</template>
+```
+
+弹窗、通知、工具提示这些需要突破父组件 overflow:hidden 限制的场景，Teleport 是最佳解决方案。
+
+---
+
+## 六、Suspense
+
+```vue
+<template>
+  <Suspense>
+    <template #default>
+      <AsyncComponent />
+    </template>
+    <template #fallback>
+      <Loading />
+    </template>
+  </Suspense>
+</template>
+```
+
+Suspense 用于处理异步组件的加载状态。配合 `<script setup>` 中的 async 组件使用。
+
+---
+
+## 七、大型项目架构
+
+### 7.1 目录结构
+
+```
+src/
+  components/       # 通用组件
+  composables/      # 可复用逻辑
+  views/            # 页面组件
+  router/           # 路由配置
+  stores/           # Pinia 状态管理
+  utils/            # 工具函数
+  types/            # TypeScript 类型
+  assets/           # 静态资源
+```
+
+### 7.2 组件设计原则
+
+- 单一职责：每个组件只做一件事
+- Props 向下，Events 向上
+- 用 slots 实现组件内容的灵活定制
+- 用 provide/inject 实现深层组件通信
+- 用 composable 替代 mixin 做逻辑复用
+
+---
+
+## 八、与 TypeScript 的配合
+
+Vue 3 的 TypeScript 支持比 Vue 2 好得多。`<script setup>` + TypeScript 是推荐的开发方式。
+
+```vue
+<script setup lang="ts">
+interface Props {
+  title: string;
+  count?: number;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  count: 0
+});
+
+const emit = defineEmits<{
+  change: [value: number];
+}>();
+</script>
+```
+
+---
+
+## 总结
+
+Vue 3 的 Composition API 不仅仅是语法变化，它带来了更好的逻辑复用、更清晰的代码组织、更好的 TypeScript 支持。掌握 ref vs reactive 的选择、composables 的设计模式、provide/inject 的正确用法，你的 Vue 3 代码质量会有质的提升。
+$doc$,
+    NULL,
+    'published',
+    NOW() - INTERVAL '11 days',
+    NOW() - INTERVAL '11 days',
+    NOW() - INTERVAL '11 days'
+),
+(
+    1,
+    'Git 内部原理与高级工作流实战',
+    'git-advanced-guide',
+    '从 Git 对象模型到分支策略，从 interactive rebase 到 bisect 调试，深入讲解 Git 内部原理和高效协作工作流。',
+    $doc$
+# Git 内部原理与高级工作流实战
+
+## 前言
+
+大部分开发者用 Git 只会 `add`、`commit`、`push`、`pull`。出了问题就 Google，找到答案照着做，也不理解为什么要这样做。这篇文章想从 Git 的内部原理讲起，帮你理解每个命令背后发生了什么。理解了原理，很多高级操作就自然会用了。
+
+---
+
+## 一、Git 对象模型
+
+### 1.1 三种对象
+
+Git 的核心是三个对象类型：blob（文件内容）、tree（目录结构）、commit（提交信息）。
+
+```bash
+# 查看 Git 对象
+git cat-file -t HEAD    # 查看对象类型
+git cat-file -p HEAD    # 查看对象内容
+```
+
+每个 commit 指向一个 tree，tree 指向 blob 和子 tree。commit 的 parent 指针形成提交历史。
+
+### 1.2 SHA-1 哈希
+
+Git 用 SHA-1 哈希作为对象的唯一标识。相同的文件内容会产生相同的 blob 对象，这就是为什么 Git 能高效地检测重复文件。
+
+```bash
+# 计算文件的 SHA-1
+git hash-object file.txt
+```
+
+### 1.3 引用（Refs）
+
+分支和标签本质上都是引用——一个指向 commit 的文件。
+
+```bash
+# 分支引用
+cat .git/refs/heads/main
+
+# 标签引用
+cat .git/refs/tags/v1.0.0
+```
+
+---
+
+## 二、Git 工作流
+
+### 2.1 暂存区
+
+暂存区（staging area）是 Git 独特的设计。它让你可以精确控制每次提交包含哪些改动。
+
+```bash
+# 部分暂存
+git add -p          # 交互式选择要暂存的代码块
+
+# 暂存删除
+git rm file.txt     # 从暂存区和工作区删除
+git rm --cached file.txt  # 只从暂存区删除
+```
+
+### 2.2 HEAD 指针
+
+HEAD 指向当前分支的最新 commit。`git checkout` 本质上是移动 HEAD 指针。
+
+```bash
+# 查看 HEAD 指向
+cat .git/HEAD
+
+# detached HEAD 状态
+git checkout <commit-hash>
+```
+
+---
+
+## 三、分支策略
+
+### 3.1 Git Flow
+
+Git Flow 适合有明确发布周期的项目：main（生产分支）、develop（开发分支）、feature/*（功能分支）、release/*（发布分支）、hotfix/*（紧急修复）。
+
+### 3.2 GitHub Flow
+
+GitHub Flow 更简洁：main 分支始终可部署，功能分支通过 Pull Request 合并到 main。
+
+### 3.3 Trunk-Based Development
+
+Trunk-Based Development 更激进：所有开发者直接往 main 分支提交（或用非常短命的分支），配合特性开关控制功能发布。
+
+选哪个策略？看你的发布频率。如果是 SaaS 产品每天发布多次，Trunk-Based Development 最合适。如果是传统软件按月发布，Git Flow 更合适。
+
+---
+
+## 四、高级操作
+
+### 4.1 Interactive Rebase
+
+Interactive rebase 可以修改提交历史，整理 commit。
+
+```bash
+# 修改最近 3 次提交
+git rebase -i HEAD~3
+```
+
+编辑器会显示：
+
+```
+pick abc1234 Add login feature
+pick def5678 Fix typo in login
+pick ghi9012 Add password validation
+```
+
+可以改成：
+
+```
+pick abc1234 Add login feature
+squash def5678 Fix typo in login
+pick ghi9012 Add password validation
+```
+
+squash 会把两个 commit 合并成一个。
+
+### 4.2 Cherry-Pick
+
+Cherry-pick 把某个 commit 的改动应用到当前分支。
+
+```bash
+# 把特定 commit 应用到当前分支
+git cherry-pick abc1234
+
+# 把多个 commit 应用
+git cherry-pick abc1234 def5678
+```
+
+### 4.3 Bisect
+
+Bisect 用二分查找定位引入 bug 的 commit。
+
+```bash
+# 开始 bisect
+git bisect start
+
+# 标记当前版本有问题
+git bisect bad
+
+# 标记已知的好版本
+git bisect good v1.0.0
+
+# Git 会自动 checkout 中间的 commit
+# 测试后标记
+git bisect good    # 或 git bisect bad
+
+# 重复直到找到引入 bug 的 commit
+```
+
+### 4.4 Reflog
+
+Reflog 记录了 HEAD 的所有移动历史。即使 `git reset --hard` 丢失了 commit，也可以通过 reflog 找回。
+
+```bash
+# 查看 reflog
+git reflog
+
+# 恢复丢失的 commit
+git checkout <commit-hash>
+git branch recover-branch
+```
+
+---
+
+## 五、远程协作
+
+### 5.1 Fetch vs Pull
+
+`git fetch` 只下载远程数据，不合并。`git pull` = `git fetch` + `git merge`。
+
+建议用 `git fetch` + `git rebase` 代替 `git pull`，保持提交历史更整洁。
+
+### 5.2 Push Options
+
+```bash
+# 推送并创建 Pull Request
+git push origin feature-branch -o pull-request
+
+# 推送并自动合并
+git push origin main -o merge
+```
+
+### 5.3 Git LFS
+
+Git LFS（Large File Storage）用于存储大文件（视频、数据集、二进制文件）。
+
+```bash
+# 安装 Git LFS
+git lfs install
+
+# 跟踪大文件
+git lfs track "*.psd"
+git lfs track "*.zip"
+```
+
+---
+
+## 六、配置与别名
+
+### 6.1 实用别名
+
+```bash
+git config --global alias.st status
+git config --global alias.co checkout
+git config --global alias.br branch
+git config --global alias.ci commit
+git config --global alias.lg "log --oneline --graph --all"
+git config --global alias.last "log -1 HEAD"
+git config --global alias.unstage "reset HEAD --"
+```
+
+### 6.2 .gitattributes
+
+```gitattributes
+# 指定换行符
+*.sh text eol=lf
+*.bat text eol=crlf
+
+# 标记二进制文件
+*.png binary
+*.jpg binary
+
+# 合并策略
+package-lock.json merge=ours
+```
+
+---
+
+## 七、常见问题解决
+
+### 7.1 撤销操作
+
+```bash
+# 撤销工作区修改
+git checkout -- file.txt
+
+# 撤销暂存
+git reset HEAD file.txt
+
+# 修改上一次提交
+git commit --amend
+
+# 回退到某个 commit
+git reset --hard <commit-hash>
+```
+
+### 7.2 冲突解决
+
+```bash
+# 查看冲突文件
+git status
+
+# 解决冲突后
+git add <file>
+git commit    # 不需要 -m，Git 会自动生成合并提交信息
+```
+
+### 7.3 清理
+
+```bash
+# 删除已合并的分支
+git branch --merged main | grep -v main | xargs git branch -d
+
+# 清理未跟踪的文件
+git clean -fd
+```
+
+---
+
+## 八、Git Hooks
+
+Git Hooks 是在特定事件发生时自动执行的脚本。
+
+```bash
+# .git/hooks/pre-commit
+#!/bin/sh
+# 在提交前运行 lint
+npm run lint
+if [ $? -ne 0 ]; then
+  echo "Lint 失败，提交被阻止"
+  exit 1
+fi
+```
+
+推荐使用 husky 来管理 Git Hooks：
+
+```bash
+npx husky install
+npx husky add .husky/pre-commit "npm run lint"
+```
+
+---
+
+## 总结
+
+理解 Git 的内部原理（对象模型、引用、暂存区）能让你更自信地使用高级操作。interactive rebase、cherry-pick、bisect 这些工具在日常开发中非常实用。选一个适合你团队的分支策略，配合 Git Hooks 保证代码质量。
+$doc$,
+    NULL,
+    'published',
+    NOW() - INTERVAL '10 days',
+    NOW() - INTERVAL '10 days',
+    NOW() - INTERVAL '10 days'
+),
+(
+    1,
+    'Nginx 高性能 Web 服务器配置与优化实战',
+    'nginx-performance-guide',
+    '从架构原理到生产环境调优，覆盖 Nginx master-worker 模型、事件驱动、虚拟主机、location 匹配、upstream 负载均衡、SSL/TLS、HTTP/2、缓存、限流、安全加固、OpenResty Lua 扩展、WebSocket 代理、性能调优与监控',
+    $doc$
+# Nginx 高性能 Web 服务器配置与优化实战
+
+我第一次真正理解 Nginx 是在 2016 年，当时公司的一台 Apache 服务器在促销活动期间扛不住流量挂了。迁移到 Nginx 之后，同样的硬件跑了原来三倍的请求量。这件事让我意识到，选对工具比堆硬件重要得多。
+
+这篇文章是我这些年折腾 Nginx 的经验总结，从架构原理到生产配置，尽量写得实用。
+
+## 1. Nginx 的架构：master-worker 模型
+
+Nginx 用一个 master 进程管理多个 worker 进程。master 负责读取配置、绑定端口、管理 worker；worker 负责实际处理请求。每个 worker 是一个独立进程，互相之间不共享内存。
+
+worker 数量通常设成 CPU 核心数。太多会增加进程切换开销，太少会浪费 CPU。
+
+每个 worker 内部是事件驱动模型（epoll on Linux，kqueue on macOS）。单个 worker 就能处理成千上万的并发连接，不需要为每个请求开新线程。
+
+## 2. 虚拟主机与 server_name 匹配
+
+Nginx 收到请求后，按优先级匹配 server 块：精确匹配 > 前缀通配符 > 后缀通配符 > 正则表达式 > 默认 server。HTTPS 的虚拟主机匹配有个坑：因为 SSL 握手发生在 HTTP 层之前，Nginx 只能靠 SNI 里的域名来选证书。
+
+## 3. location 匹配规则
+
+匹配优先级从高到低：`=` 精确匹配 > `^~` 前缀匹配（找到后停止搜索正则）> `~` 或 `~*` 正则匹配 > 普通前缀匹配。静态资源用 `^~` 或 `=` 可以跳过正则匹配，提升性能。
+
+## 4. upstream 代理与负载均衡
+
+负载均衡算法：轮询（默认）、加权轮询、IP Hash（会话保持）、Least Connections、一致性哈希。无状态服务用 least_conn 或加权轮询，需要会话保持用 ip_hash，缓存场景用一致性哈希。
+
+健康检查通过 `max_fails` 和 `fail_timeout` 做被动检测。
+
+## 5. SSL/TLS 配置
+
+只开 TLSv1.2 和 TLSv1.3，关掉老版本。HSTS 头让浏览器以后只走 HTTPS。OCSP Stapling 减少客户端验证证书的延迟。`ssl_session_cache` 复用 SSL 会话，减少握手开销。
+
+## 6. 缓存配置
+
+代理缓存减少回源请求。静态资源设置长期缓存。Microcaching 在高并发场景下缓存 1-5 秒，大幅降低后端压力。`proxy_cache_lock on` 确保同一时间只有一个请求去回源。
+
+## 7. 限流与访问控制
+
+请求限速通过 `limit_req_zone` 和 `limit_req` 实现。连接数限制通过 `limit_conn_zone` 和 `limit_conn` 实现。IP 黑白名单通过 `allow`/`deny` 或 `geo` 模块实现。
+
+## 8. 安全加固
+
+隐藏版本信息（server_tokens off）、安全响应头（X-Frame-Options、X-Content-Type-Options、CSP）、限制请求方法、防止路径穿越、限制请求体大小。
+
+## 9. 性能调优
+
+连接处理（worker_connections、multi_accept、epoll）、缓冲区配置（sendfile、tcp_nopush、tcp_nodelay）、超时设置（keepalive_timeout、keepalive_requests）、Gzip 压缩。
+
+## 10. Lua 集成与 OpenResty
+
+OpenResty 把 LuaJIT 嵌入 Nginx，让你在 Nginx 配置里直接写 Lua 代码。可以实现请求限流（令牌桶）、动态路由、JWT 验证等高级功能。
+
+## 11. WebSocket 代理
+
+关键是处理好协议升级。`proxy_read_timeout` 默认是 60 秒，WebSocket 空闲超过这个时间会被断开，所以要调大。
+
+## 12. 监控
+
+stub_status 提供基本的连接统计。配合 nginx-vts-exporter 可以把指标接入 Prometheus + Grafana。
+
+## 13. 常见问题排查
+
+502 Bad Gateway 检查后端服务状态；504 Gateway Timeout 调大超时时间但根本原因是后端性能；413 Request Entity Too Large 增大 client_max_body_size；配置不生效用 nginx -T 查看完整配置。
+
+## 结尾
+
+Nginx 入门不难但精通需要时间。每次线上出问题回头看，往往都是配置里某个参数没调对。建议把线上验证过的配置模板化，新项目直接用。配置改之前一定跑 `nginx -t`。
+$doc$,
+    NULL,
+    'published',
+    NOW() - INTERVAL '3 days',
+    NOW() - INTERVAL '3 days',
+    NOW() - INTERVAL '3 days'
+),
+(
+    1,
+    '常用数据结构与算法实战',
+    'algorithms-practice-guide',
+    '从排序到图论，从动态规划到回溯，覆盖 20+ 种常用算法的原理、实现、复杂度分析和 LeetCode 经典题解。',
+    $doc$
+# 常用数据结构与算法实战
+
+## 前言
+
+学算法不是为了刷题，是为了在面对问题时能想到高效的解决方案。我见过太多项目因为用了 O(n²) 的算法导致性能瓶颈，最后花几天时间重写成 O(n log n) 的版本。如果开发者脑子里没有算法这根弦，遇到性能问题根本不会往这个方向想。
+
+这篇文章不追求算法的数学证明，重点放在每种算法的核心思想、适用场景和实际实现。
+
+---
+
+## 一、排序算法
+
+### 1.1 快速排序
+
+快速排序是实际应用中最常用的排序算法。核心思想：选一个基准值，把数组分成小于和大于基准值的两部分，递归排序。
+
+```python
+def quicksort(arr):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quicksort(left) + middle + quicksort(right)
+```
+
+平均时间复杂度 O(n log n)，最坏 O(n²)。随机选择基准值可以避免最坏情况。
+
+### 1.2 归并排序
+
+归并排序是稳定的排序算法。核心思想：把数组分成两半，递归排序，然后合并。
+
+```python
+def mergesort(arr):
+    if len(arr) <= 1:
+        return arr
+    mid = len(arr) // 2
+    left = mergesort(arr[:mid])
+    right = mergesort(arr[mid:])
+    return merge(left, right)
+
+def merge(left, right):
+    result = []
+    i = j = 0
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result
+```
+
+时间复杂度稳定 O(n log n)，但需要 O(n) 额外空间。
+
+### 1.3 堆排序
+
+堆排序利用堆数据结构实现排序。适合需要原地排序且空间受限的场景。
+
+### 1.4 排序算法对比
+
+| 算法 | 平均时间 | 最坏时间 | 空间 | 稳定性 |
+|------|---------|---------|------|--------|
+| 快速排序 | O(n log n) | O(n²) | O(log n) | 不稳定 |
+| 归并排序 | O(n log n) | O(n log n) | O(n) | 稳定 |
+| 堆排序 | O(n log n) | O(n log n) | O(1) | 不稳定 |
+| 插入排序 | O(n²) | O(n²) | O(1) | 稳定 |
+
+---
+
+## 二、查找算法
+
+### 2.1 二分查找
+
+二分查找的前提是数组有序。每次比较中间元素，将搜索范围缩小一半。
+
+```python
+def binary_search(arr, target):
+    left, right = 0, len(arr) - 1
+    while left <= right:
+        mid = (left + right) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return -1
+```
+
+时间复杂度 O(log n)。变体：查找第一个/最后一个等于目标值的位置、查找第一个大于等于目标值的位置。
+
+### 2.2 哈希表
+
+哈希表提供 O(1) 的平均查找时间。核心是哈希函数和冲突解决。
+
+冲突解决方法：链地址法（Java HashMap）、开放寻址法（Python dict）。
+
+---
+
+## 三、数据结构
+
+### 3.1 栈
+
+栈是后进先出（LIFO）的数据结构。
+
+应用场景：函数调用栈、表达式求值、括号匹配、浏览器前进/后退。
+
+### 3.2 队列
+
+队列是先进先出（FIFO）的数据结构。
+
+变体：双端队列（deque）、优先队列（priority queue，基于堆实现）。
+
+### 3.3 链表
+
+链表是动态数据结构，插入和删除操作的时间复杂度是 O(1)。
+
+```python
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+```
+
+链表的经典问题：反转链表、检测环、合并两个有序链表、找中间节点。
+
+### 3.4 树
+
+二叉搜索树（BST）：左子树所有节点值小于根节点，右子树所有节点值大于根节点。查找、插入、删除的平均时间复杂度是 O(log n)。
+
+平衡二叉树（AVL、红黑树）：保证树的高度是 O(log n)，避免退化成链表。
+
+### 3.5 图
+
+图的表示方式：邻接矩阵、邻接表。
+
+图的遍历：BFS（广度优先搜索，按层遍历）、DFS（深度优先搜索，沿一条路径走到底再回溯）。
+
+---
+
+## 四、经典算法
+
+### 4.1 动态规划
+
+动态规划的核心：把大问题分解成子问题，存储子问题的结果避免重复计算。
+
+适用条件：最优子结构、重叠子问题。
+
+经典问题：爬楼梯、最大子数组和、编辑距离、背包问题、最长公共子序列。
+
+### 4.2 贪心算法
+
+贪心算法每一步都选择当前看起来最优的选项。不一定能得到全局最优解，但在某些问题上能保证最优。
+
+经典问题：活动选择、霍夫曼编码、Dijkstra 最短路径。
+
+### 4.3 回溯
+
+回溯是一种系统地搜索解空间的方法。在每一步做出选择，如果不满足条件就撤销选择。
+
+经典问题：N 皇后、数独求解、全排列、组合总和。
+
+### 4.4 分治
+
+分治把问题分成若干个规模较小的子问题，递归求解，然后合并结果。归并排序和快速排序都是分治的典型应用。
+
+---
+
+## 五、复杂度分析
+
+### 5.1 时间复杂度
+
+常见的时间复杂度从低到高：O(1) < O(log n) < O(n) < O(n log n) < O(n²) < O(2ⁿ) < O(n!)。
+
+### 5.2 空间复杂度
+
+除了算法本身需要的额外空间，还要考虑递归调用的栈空间。快速排序的空间复杂度是 O(log n)（递归栈），归并排序是 O(n)（合并用的临时数组）。
+
+---
+
+## 六、LeetCode 经典题
+
+### 6.1 两数之和（HashMap）
+
+```python
+def twoSum(nums, target):
+    seen = {}
+    for i, num in enumerate(nums):
+        complement = target - num
+        if complement in seen:
+            return [seen[complement], i]
+        seen[num] = i
+```
+
+### 6.2 最大子数组和（动态规划）
+
+```python
+def maxSubArray(nums):
+    max_sum = current_sum = nums[0]
+    for num in nums[1:]:
+        current_sum = max(num, current_sum + num)
+        max_sum = max(max_sum, current_sum)
+    return max_sum
+```
+
+### 6.3 反转链表（迭代）
+
+```python
+def reverseList(head):
+    prev = None
+    current = head
+    while current:
+        next_temp = current.next
+        current.next = prev
+        prev = current
+        current = next_temp
+    return prev
+```
+
+---
+
+## 总结
+
+算法学习是一个持续的过程。不需要背诵所有算法的模板，但要理解每种算法的核心思想和适用场景。遇到问题时，先分析时间复杂度需求，再选择合适的算法。
+$doc$,
+    NULL,
+    'published',
+    NOW() - INTERVAL '9 days',
+    NOW() - INTERVAL '9 days',
+    NOW() - INTERVAL '9 days'
+),
+(
+    1,
+    'WebSocket 实时通信与 Server-Sent Events',
+    'websocket-realtime-guide',
+    '从协议原理到生产实践，覆盖 WebSocket 握手、心跳机制、Socket.IO、Redis Pub/Sub 多实例广播、SSE 长连接和实时应用架构设计。',
+    $doc$
+# WebSocket 实时通信与 Server-Sent Events
+
+## 前言
+
+传统的 HTTP 请求-响应模型在实时场景下力不从心。想象一个在线聊天应用：用户发了一条消息，其他用户要看到这条消息，要么不停轮询（浪费资源），要么用长轮询（体验差）。WebSocket 解决了这个问题——它建立了一个全双工的持久连接，服务端可以主动推送数据给客户端。
+
+这篇文章会从协议原理讲起，覆盖 WebSocket 的完整技术栈和生产实践。
+
+---
+
+## 一、WebSocket 基础
+
+### 1.1 协议原理
+
+WebSocket 是一个独立的协议，基于 TCP。它通过 HTTP 升级握手建立连接，之后的数据传输不经过 HTTP。
+
+握手过程：
+1. 客户端发送 HTTP 请求，带上 `Upgrade: websocket` 头
+2. 服务端返回 101 Switching Protocols
+3. 连接升级为 WebSocket 全双工通信
+
+### 1.2 与 HTTP 的区别
+
+| 特性 | HTTP | WebSocket |
+|------|------|-----------|
+| 连接方式 | 请求-响应 | 全双工 |
+| 连接持续 | 短连接（或 Keep-Alive） | 长连接 |
+| 数据格式 | 文本 | 文本或二进制 |
+| 服务端推送 | 不支持（轮询） | 原生支持 |
+| 协议头开销 | 大 | 小（2-14 字节） |
+
+### 1.3 适用场景
+
+适合 WebSocket 的场景：在线聊天、实时协作编辑、多人游戏、实时数据看板、股票行情推送。
+
+不适合的场景：低频数据更新（每分钟一次用轮询就够了）、简单的请求-响应（HTTP 更合适）。
+
+---
+
+## 二、前端实现
+
+### 2.1 原生 WebSocket API
+
+```javascript
+const ws = new WebSocket('ws://localhost:3000');
+
+ws.onopen = () => {
+  console.log('连接已建立');
+  ws.send(JSON.stringify({ type: 'join', room: 'general' }));
+};
+
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  console.log('收到消息:', data);
+};
+
+ws.onclose = (event) => {
+  console.log('连接已关闭:', event.code, event.reason);
+};
+
+ws.onerror = (error) => {
+  console.error('连接错误:', error);
+};
+```
+
+### 2.2 Socket.IO
+
+Socket.IO 是基于 WebSocket 的封装库，提供了自动重连、房间、命名空间、回退机制（WebSocket 不可用时自动降级到轮询）。
+
+```javascript
+// 客户端
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:3000');
+
+socket.on('connect', () => {
+  console.log('已连接:', socket.id);
+});
+
+socket.on('message', (data) => {
+  console.log('收到消息:', data);
+});
+
+socket.emit('send-message', { text: 'Hello', room: 'general' });
+
+// 服务端
+import { Server } from 'socket.io';
+
+const io = new Server(3000);
+
+io.on('connection', (socket) => {
+  console.log('用户已连接:', socket.id);
+  
+  socket.on('send-message', (data) => {
+    io.to(data.room).emit('message', data);
+  });
+  
+  socket.join('general');
+});
+```
+
+---
+
+## 三、后端实现
+
+### 3.1 Node.js WebSocket 服务端
+
+```javascript
+import { WebSocketServer } from 'ws';
+
+const wss = new WebSocketServer({ port: 3000 });
+
+const clients = new Set();
+
+wss.on('connection', (ws) => {
+  clients.add(ws);
+  
+  ws.on('message', (message) => {
+    const data = JSON.parse(message);
+    
+    // 广播给所有客户端
+    for (const client of clients) {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(data));
+      }
+    }
+  });
+  
+  ws.on('close', () => {
+    clients.delete(ws);
+  });
+});
+```
+
+### 3.2 心跳机制
+
+心跳检测连接是否存活。客户端定期发送 ping，服务端返回 pong。如果超时没有收到 pong，就断开连接。
+
+```javascript
+// 服务端
+const HEARTBEAT_INTERVAL = 30000;
+
+setInterval(() => {
+  wss.clients.forEach((ws) => {
+    if (ws.isAlive === false) {
+      return ws.terminate();
+    }
+    ws.isAlive = false;
+    ws.ping();
+  });
+}, HEARTBEAT_INTERVAL);
+
+wss.on('connection', (ws) => {
+  ws.isAlive = true;
+  ws.on('pong', () => { ws.isAlive = true; });
+});
+```
+
+### 3.3 优雅关闭
+
+```javascript
+process.on('SIGTERM', () => {
+  console.log('收到 SIGTERM 信号，准备关闭');
+  
+  // 停止接受新连接
+  wss.close(() => {
+    console.log('WebSocket 服务已关闭');
+    process.exit(0);
+  });
+  
+  // 通知所有客户端即将断开
+  for (const client of wss.clients) {
+    client.close(1001, 'Server shutting down');
+  }
+});
+```
+
+---
+
+## 四、多实例部署
+
+### 4.1 问题
+
+WebSocket 是有状态的——连接建立后，后续的消息必须发到同一个服务器实例。如果用负载均衡器把请求分发到不同的实例，消息就丢失了。
+
+### 4.2 Redis Pub/Sub
+
+用 Redis 的发布/订阅功能在多个实例之间广播消息。
+
+```javascript
+import Redis from 'ioredis';
+
+const pub = new Redis();
+const sub = new Redis();
+
+// 订阅频道
+sub.subscribe('chat:general');
+
+// 收到消息后广播给本地客户端
+sub.on('message', (channel, message) => {
+  for (const client of clients) {
+    client.send(message);
+  }
+});
+
+// 发布消息
+ws.on('message', (data) => {
+  pub.publish('chat:general', JSON.stringify(data));
+});
+```
+
+### 4.3 Sticky Session
+
+负载均衡器配置 sticky session，确保同一客户端的请求总是路由到同一个后端实例。
+
+---
+
+## 五、Server-Sent Events（SSE）
+
+### 5.1 SSE vs WebSocket
+
+SSE 是基于 HTTP 的单向推送（服务端到客户端）。WebSocket 是全双工的。
+
+| 特性 | SSE | WebSocket |
+|------|-----|-----------|
+| 方向 | 服务端→客户端 | 双向 |
+| 协议 | HTTP | WebSocket |
+| 数据格式 | 文本 | 文本或二进制 |
+| 自动重连 | 浏览器内置 | 需要自己实现 |
+| 代理兼容 | 好（标准 HTTP） | 可能有问题 |
+
+适合 SSE 的场景：通知推送、实时数据更新（只从服务端到客户端）、服务器事件日志。
+
+### 5.2 前端实现
+
+```javascript
+const eventSource = new EventSource('/api/events');
+
+eventSource.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  console.log('收到事件:', data);
+};
+
+eventSource.onerror = () => {
+  console.log('连接断开，浏览器会自动重连');
+};
+```
+
+### 5.3 Node.js 实现
+
+```javascript
+app.get('/api/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  
+  const sendEvent = (data) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+  
+  // 监听数据变化并推送
+  eventEmitter.on('update', sendEvent);
+  
+  req.on('close', () => {
+    eventEmitter.removeListener('update', sendEvent);
+  });
+});
+```
+
+---
+
+## 六、安全考虑
+
+### 6.1 认证
+
+WebSocket 连接建立时无法直接设置自定义头。几种认证方式：
+- 通过 URL 参数传递 token（不推荐，日志会泄露）
+- 连接建立后发送第一条消息携带 token
+- 先通过 HTTP 请求获取 token，再建立 WebSocket 连接
+
+### 6.2 防止 DDoS
+
+- 限制单 IP 的连接数
+- 设置消息大小限制
+- 使用速率限制
+- 验证 Origin 头
+
+### 6.3 数据验证
+
+所有收到的消息都必须验证格式和内容，不要信任客户端数据。
+
+---
+
+## 七、性能优化
+
+### 7.1 消息压缩
+
+WebSocket 支持 permessage-deflate 扩展，可以压缩消息。
+
+### 7.2 连接池
+
+对于需要连接多个 WebSocket 服务的应用，使用连接池管理连接。
+
+### 7.3 水平扩展
+
+通过 Redis Pub/Sub 或 Kafka 实现多实例之间的消息广播。
+
+---
+
+## 八、实战：聊天室
+
+一个完整的聊天室需要：用户认证、房间管理、消息广播、消息持久化、在线用户列表、输入状态提示。
+
+推荐的技术栈：前端用 Socket.IO，后端用 Node.js + Socket.IO，消息存储用 Redis + PostgreSQL，多实例广播用 Redis Pub/Sub。
+
+---
+
+## 总结
+
+WebSocket 是实时应用的核心技术。选择 WebSocket 还是 SSE 取决于你的场景是否需要双向通信。如果只需要服务端推送，SSE 更简单。如果需要双向实时通信，WebSocket 是唯一选择。生产环境别忘了心跳机制、认证、多实例部署这些关键问题。
+$doc$,
+    NULL,
+    'published',
+    NOW() - INTERVAL '8 days',
+    NOW() - INTERVAL '8 days',
+    NOW() - INTERVAL '8 days'
+),
+(
+    1,
+    'gRPC 与 Protocol Buffers 微服务通信实战',
+    'grpc-microservices-guide',
+    '从 proto 文件定义到流式 RPC，从负载均衡到拦截器，覆盖 gRPC 在微服务架构中的完整应用实践。',
+    $doc$
+# gRPC 与 Protocol Buffers 微服务通信实战
+
+## 前言
+
+REST API 在微服务通信中有几个痛点：JSON 序列化体积大、传输效率低、没有严格的接口契约、不支持流式通信。gRPC 解决了这些问题——它用 Protocol Buffers 做序列化（体积小、速度快），HTTP/2 做传输（多路复用、头部压缩），IDL（接口定义语言）做契约（强类型、代码生成）。
+
+这篇文章会从 proto 文件定义讲起，覆盖 gRPC 在微服务架构中的完整应用。
+
+---
+
+## 一、Protocol Buffers
+
+### 1.1 基本语法
+
+```protobuf
+syntax = "proto3";
+
+package user;
+
+message User {
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+  repeated string tags = 4;
+  map<string, string> metadata = 5;
+}
+```
+
+proto3 相比 proto2 的主要变化：所有字段都是 optional，移除了 required 关键字，支持 map 类型。
+
+### 1.2 字段编号
+
+字段编号（1, 2, 3...）是 Protocol Buffers 的核心概念。它用于在二进制编码中标识字段。一旦使用了某个编号，就不能再改。
+
+字段编号 1-15 只用 1 字节编码，16-2047 用 2 字节。常用的字段应该用小编号。
+
+### 1.3 枚举和 Oneof
+
+```protobuf
+enum Status {
+  UNKNOWN = 0;
+  ACTIVE = 1;
+  INACTIVE = 2;
+}
+
+message Event {
+  oneof payload {
+    TextMessage text = 1;
+    ImageMessage image = 2;
+    VideoMessage video = 3;
+  }
+}
+```
+
+Oneof 表示互斥的字段——同一时间只能有一个被设置。
+
+---
+
+## 二、gRPC 四种通信模式
+
+### 2.1 一元 RPC（Unary）
+
+最简单的模式：客户端发一个请求，服务端返回一个响应。
+
+```protobuf
+service UserService {
+  rpc GetUser (GetUserRequest) returns (User);
+}
+```
+
+### 2.2 服务端流式 RPC
+
+客户端发一个请求，服务端返回一个流，可以发送多个响应。
+
+```protobuf
+service UserService {
+  rpc ListUsers (ListUsersRequest) returns (stream User);
+}
+```
+
+适用场景：大数据量分页返回、实时数据推送。
+
+### 2.3 客户端流式 RPC
+
+客户端发送一个流，服务端返回一个响应。
+
+```protobuf
+service UserService {
+  rpc UploadUsers (stream User) returns (UploadResult);
+}
+```
+
+适用场景：批量上传、日志收集。
+
+### 2.4 双向流式 RPC
+
+客户端和服务端都可以随时发送数据。
+
+```protobuf
+service ChatService {
+  rpc Chat (stream ChatMessage) returns (stream ChatMessage);
+}
+```
+
+适用场景：实时聊天、双向数据同步。
+
+---
+
+## 三、Go 实现 gRPC 服务
+
+### 3.1 定义 proto 文件
+
+```protobuf
+syntax = "proto3";
+package order;
+
+service OrderService {
+  rpc CreateOrder (CreateOrderRequest) returns (Order);
+  rpc GetOrder (GetOrderRequest) returns (Order);
+  rpc ListOrders (ListOrdersRequest) returns (stream Order);
+}
+
+message CreateOrderRequest {
+  int32 user_id = 1;
+  repeated OrderItem items = 2;
+}
+
+message Order {
+  int32 id = 1;
+  int32 user_id = 2;
+  repeated OrderItem items = 3;
+  string status = 4;
+  float total = 5;
+}
+```
+
+### 3.2 生成代码
+
+```bash
+protoc --go_out=. --go-grpc_out=. proto/order.proto
+```
+
+### 3.3 实现服务
+
+```go
+type OrderServer struct {
+    pb.UnimplementedOrderServiceServer
+}
+
+func (s *OrderServer) CreateOrder(ctx context.Context, req *pb.CreateOrderRequest) (*pb.Order, error) {
+    order := &pb.Order{
+        Id:     generateID(),
+        UserId: req.UserId,
+        Items:  req.Items,
+        Status: "created",
+        Total:  calculateTotal(req.Items),
+    }
+    return order, nil
+}
+```
+
+---
+
+## 四、Java 实现 gRPC 服务
+
+```java
+public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
+    @Override
+    public void createOrder(CreateOrderRequest request, StreamObserver<Order> responseObserver) {
+        Order order = Order.newBuilder()
+            .setId(generateId())
+            .setUserId(request.getUserId())
+            .addAllItems(request.getItemsList())
+            .setStatus("created")
+            .build();
+        
+        responseObserver.onNext(order);
+        responseObserver.onCompleted();
+    }
+}
+```
+
+---
+
+## 五、负载均衡
+
+### 5.1 客户端负载均衡
+
+gRPC 内置了客户端负载均衡。客户端从服务发现获取所有实例，自己做负载均衡。
+
+```go
+conn, err := grpc.Dial(
+    "dns:///order-service:50051",
+    grpc.WithDefaultServiceConfig(`{"loadBalancingConfig": [{"round_robin":{}}]}`),
+)
+```
+
+### 5.2 服务端负载均衡
+
+用 Nginx 或 Envoy 做服务端负载均衡。Nginx 1.13.10+ 支持 gRPC 代理。
+
+---
+
+## 六、拦截器（Interceptors）
+
+拦截器类似于中间件，在 RPC 调用前后执行逻辑。
+
+### 6.1 一元拦截器
+
+```go
+func loggingInterceptor(
+    ctx context.Context,
+    req interface{},
+    info *grpc.UnaryServerInfo,
+    handler grpc.UnaryHandler,
+) (interface{}, error) {
+    start := time.Now()
+    resp, err := handler(ctx, req)
+    log.Printf("Method: %s, Duration: %v, Error: %v",
+        info.FullMethod, time.Since(start), err)
+    return resp, err
+}
+```
+
+### 6.2 链式拦截器
+
+```go
+server := grpc.NewServer(
+    grpc.ChainUnaryInterceptor(
+        recoveryInterceptor,
+        loggingInterceptor,
+        authInterceptor,
+    ),
+)
+```
+
+---
+
+## 七、错误处理
+
+gRPC 定义了标准的状态码：
+
+| 状态码 | 含义 |
+|--------|------|
+| OK | 成功 |
+| INVALID_ARGUMENT | 参数无效 |
+| NOT_FOUND | 资源不存在 |
+| ALREADY_EXISTS | 资源已存在 |
+| PERMISSION_DENIED | 权限不足 |
+| UNAUTHENTICATED | 未认证 |
+| INTERNAL | 内部错误 |
+| UNAVAILABLE | 服务不可用 |
+
+不要把所有错误都返回 INTERNAL——使用正确的状态码让客户端能做出适当的处理。
+
+---
+
+## 八、认证
+
+### 8.1 Token 认证
+
+```go
+// 客户端
+token := &oauth2.Token{AccessToken: "my-token"}
+conn, err := grpc.Dial(addr,
+    grpc.WithTransportCredentials(insecure.NewCredentials()),
+    grpc.WithPerRPCCredentials(&tokenAuth{token: token}),
+)
+```
+
+### 8.2 TLS
+
+```go
+creds, err := credentials.NewServerTLSFromFile("server.crt", "server.key")
+server := grpc.NewServer(grpc.Creds(creds))
+```
+
+---
+
+## 九、健康检查
+
+gRPC 定义了标准的健康检查协议：
+
+```protobuf
+service Health {
+  rpc Check (HealthCheckRequest) returns (HealthCheckResponse);
+}
+```
+
+Kubernetes 可以用这个协议做存活探针和就绪探针。
+
+---
+
+## 十、gRPC-Web
+
+gRPC-Web 让浏览器可以直接调用 gRPC 服务。通过 Envoy 代理将 gRPC-Web 协议转换为标准 gRPC 协议。
+
+---
+
+## 十一、与 REST 共存
+
+### 11.1 gRPC-Gateway
+
+gRPC-Gateway 把 gRPC 服务映射为 REST API。通过 proto 文件中的注释定义 HTTP 映射。
+
+### 11.2 同时暴露两种协议
+
+一个服务同时监听 gRPC 端口和 HTTP 端口，满足不同客户端的需求。
+
+---
+
+## 十二、性能优化
+
+### 12.1 连接管理
+
+gRPC 基于 HTTP/2，支持多路复用。一个 TCP 连接可以并发多个 RPC 调用。客户端应该复用连接，不要为每次调用创建新连接。
+
+### 12.2 消息大小
+
+默认的 gRPC 消息大小限制是 4MB。对于大消息，需要调整 `maxSendMsgSize` 和 `maxRecvMsgSize`。
+
+### 12.3 超时和截止时间
+
+```go
+ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+defer cancel()
+resp, err := client.GetOrder(ctx, &pb.GetOrderRequest{Id: orderId})
+```
+
+---
+
+## 十三、测试
+
+### 13.1 单元测试
+
+gRPC 服务的单元测试可以用 bufconn 建立内存连接，不需要启动真实的服务器。
+
+### 13.2 集成测试
+
+用测试容器（testcontainers）启动真实的依赖服务，验证端到端的流程。
+
+---
+
+## 总结
+
+gRPC 在微服务通信中比 REST 更高效、更可靠。Protocol Buffers 的强类型保证了接口契约，HTTP/2 提供了高效的传输，流式 RPC 支持了实时场景。但 gRPC 不是万能的——浏览器支持有限、调试不如 REST 直观、学习曲线较陡。选择 REST 还是 gRPC，取决于你的具体场景。
+$doc$,
+    NULL,
+    'published',
+    NOW() - INTERVAL '7 days',
+    NOW() - INTERVAL '7 days',
+    NOW() - INTERVAL '7 days'
+),
+(
+    1,
+    'CI/CD 流水线设计与 DevOps 实践',
+    'cicd-devops-guide',
+    '从构建自动化到部署策略，覆盖 Jenkins、GitHub Actions、GitLab CI、ArgoCD 工具链，讲解流水线设计、环境管理、质量门禁和发布策略。',
+    $doc$
+# CI/CD 流水线设计与 DevOps 实践
+
+## 前言
+
+CI/CD 不是工具问题，是文化问题。我见过太多团队买了昂贵的 CI/CD 平台，但开发流程还是老样子——手动测试、手动部署、出了问题再修。工具只是手段，目的是让代码从提交到上线这个过程更快、更可靠、更自动化。
+
+这篇文章从实践角度出发，讲一讲 CI/CD 流水线的设计原则和常见方案。
+
+---
+
+## 一、持续集成（CI）
+
+### 1.1 什么是持续集成
+
+持续集成的核心实践：开发者频繁地把代码合并到主分支，每次合并都触发自动化构建和测试。
+
+### 1.2 CI 流水线设计
+
+一个典型的 CI 流水线包括：
+
+1. **代码检出**：从 Git 仓库拉取代码
+2. **依赖安装**：安装项目依赖
+3. **代码检查**：lint、格式化检查
+4. **单元测试**：运行单元测试
+5. **集成测试**：运行集成测试
+6. **代码覆盖率**：生成覆盖率报告
+7. **安全扫描**：依赖漏洞扫描、SAST
+8. **构建**：编译打包
+
+### 1.3 质量门禁
+
+质量门禁是 CI 的核心——不合格的代码不允许合并。
+
+```yaml
+# GitHub Actions 示例
+- name: Quality Gate
+  run: |
+    # 测试通过率必须 100%
+    # 代码覆盖率必须 > 80%
+    # 没有 P0/P1 级别的安全漏洞
+    # 代码 lint 没有 error
+```
+
+---
+
+## 二、持续部署（CD）
+
+### 2.1 部署策略
+
+**蓝绿部署**：维护两套完全相同的环境，切换流量实现零停机。
+
+**金丝雀发布**：先给一小部分用户使用新版本，观察没有问题后再全量发布。
+
+**滚动更新**：逐步替换旧版本的实例。Kubernetes 的默认策略。
+
+### 2.2 环境管理
+
+开发环境 → 测试环境 → 预发布环境 → 生产环境。每个环境的配置通过环境变量或配置中心管理，不要硬编码在代码里。
+
+### 2.3 回滚策略
+
+任何部署都必须有回滚方案。最简单的回滚：回退到上一个版本的镜像重新部署。
+
+---
+
+## 三、CI/CD 工具
+
+### 3.1 GitHub Actions
+
+```yaml
+name: CI/CD
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm test
+      - run: npm run lint
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to production
+        run: ./deploy.sh
+```
+
+### 3.2 GitLab CI
+
+```yaml
+stages:
+  - test
+  - build
+  - deploy
+
+test:
+  stage: test
+  script:
+    - npm ci
+    - npm test
+
+build:
+  stage: build
+  script:
+    - docker build -t myapp:$CI_COMMIT_SHA .
+    - docker push registry.example.com/myapp:$CI_COMMIT_SHA
+
+deploy:
+  stage: deploy
+  script:
+    - kubectl set image deployment/myapp myapp=registry.example.com/myapp:$CI_COMMIT_SHA
+  only:
+    - main
+```
+
+### 3.3 Jenkins
+
+Jenkins 是老牌的 CI/CD 工具，生态丰富但配置复杂。推荐用 Jenkins Pipeline 即代码的方式管理流水线。
+
+---
+
+## 四、GitOps
+
+### 4.1 GitOps 原则
+
+- 所有声明式配置存储在 Git 仓库中
+- Git 仓库是系统的唯一事实来源
+- 自动化工具将实际状态同步到 Git 中定义的期望状态
+- 变更通过 Pull Request 流程审核
+
+### 4.2 ArgoCD
+
+ArgoCD 是 Kubernetes 原生的 GitOps 工具：
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: my-app
+spec:
+  source:
+    repoURL: https://github.com/org/k8s-manifests.git
+    path: apps/my-app
+    targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: production
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+```
+
+### 4.3 Flux
+
+Flux 是另一个流行的 GitOps 工具，架构更模块化。
+
+---
+
+## 五、基础设施即代码（IaC）
+
+### 5.1 Terraform
+
+```hcl
+resource "aws_instance" "web" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
+  
+  tags = {
+    Name = "WebServer"
+  }
+}
+```
+
+Terraform 的工作流：plan（预览变更）→ apply（执行变更）→ destroy（销毁资源）。
+
+### 5.2 Ansible
+
+Ansible 是配置管理工具，用 YAML 定义主机配置。
+
+```yaml
+- hosts: webservers
+  tasks:
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: present
+    - name: Start nginx
+      service:
+        name: nginx
+        state: started
+```
+
+---
+
+## 六、容器化与 Kubernetes
+
+### 6.1 Docker 构建优化
+
+- 多阶段构建减小镜像体积
+- 利用构建缓存加速
+- 使用 .dockerignore 排除不需要的文件
+- 固定依赖版本
+
+### 6.2 Kubernetes 部署
+
+- 使用 Deployment 管理无状态应用
+- 配置健康检查和就绪探针
+- 设置资源限制和请求
+- 使用 ConfigMap 和 Secrets 管理配置
+- 配置 HPA（Horizontal Pod Autoscaler）自动扩缩容
+
+---
+
+## 七、监控与可观测性
+
+### 7.1 三大支柱
+
+- **Metrics**：Prometheus + Grafana
+- **Logging**：EFK 或 PLG
+- **Tracing**：Jaeger 或 Zipkin
+
+### 7.2 告警
+
+```yaml
+# Prometheus 告警规则
+groups:
+- name: app-alerts
+  rules:
+  - alert: HighErrorRate
+    expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "高错误率告警"
+```
+
+---
+
+## 八、安全
+
+### 8.1 DevSecOps
+
+安全左移——在 CI 阶段就集成安全扫描：
+
+- SAST（静态应用安全测试）：Semgrep、SonarQube
+- DAST（动态应用安全测试）：OWASP ZAP
+- SCA（软件成分分析）：Snyk、Dependabot
+- 容器镜像扫描：Trivy
+
+### 8.2 Secrets 管理
+
+不要在代码或配置文件中硬编码密钥。使用 Vault、AWS Secrets Manager、或 Kubernetes Secrets。
+
+---
+
+## 九、度量与改进
+
+### 9.1 DORA 指标
+
+- **部署频率**：多久部署一次
+- **变更前置时间**：从提交到上线需要多长时间
+- **变更失败率**：部署导致故障的比例
+- **服务恢复时间**：从故障中恢复需要多长时间
+
+### 9.2 持续改进
+
+定期回顾 CI/CD 流水线的效率，识别瓶颈，持续优化。
+
+---
+
+## 总结
+
+CI/CD 不是一次性搭建完成的，它需要根据团队的实际情况持续调整。从最简单的流水线开始，逐步添加质量门禁、安全扫描、自动化部署。记住，工具是手段，目标是更快、更可靠地交付价值。
+$doc$,
+    NULL,
+    'published',
+    NOW() - INTERVAL '6 days',
+    NOW() - INTERVAL '6 days',
+    NOW() - INTERVAL '6 days'
+),
+(
+    1,
+    'Web 应用安全攻防实战指南',
+    'web-security-guide',
+    '从渗透测试工程师视角出发，系统讲解 OWASP Top 10 漏洞原理与防御手段，覆盖 XSS、SQL 注入、CSRF、认证鉴权、HTTPS/TLS、CORS、CSP 等核心安全知识点，附带真实攻击场景和安全代码示例。',
+    $doc$
+# Web 应用安全攻防实战指南
+
+做渗透测试这些年，我发现大多数 Web 应用被攻破的原因都差不多。开发者不是不懂安全，而是不知道攻击者会怎么想。这篇文章我想从攻击者的角度出发，把最常见的 Web 安全漏洞讲清楚——不是那种"你应该注意安全"的空话，而是具体到每一行代码该怎么写。
+
+## OWASP Top 10 概览
+
+OWASP（Open Web Application Security Project）每几年会更新一次 Top 10 列表。2021 版的列表包括：Broken Access Control、Cryptographic Failures、Injection、Insecure Design、Security Misconfiguration、Vulnerable and Outdated Components、Identification and Authentication Failures、Software and Data Integrity Failures、Security Logging and Monitoring Failures、Server-Side Request Forgery。
+
+## XSS：跨站脚本攻击
+
+XSS 分三种类型：存储型（恶意脚本永久存储在服务器上）、反射型（通过 URL 参数传递）、DOM 型（漏洞完全在客户端）。
+
+防御方式：HTML 转义、CSP（Content Security Policy）、HttpOnly Cookie、DOM API 安全使用（优先用 textContent 避免 innerHTML）。
+
+## SQL 注入
+
+防御 SQL 注入的唯一可靠方式是使用参数化查询。ORM 的标准查询是安全的，但如果用了原生查询或者拼接字符串，一样会出问题。二次注入更隐蔽——恶意数据在第一次被存储时被转义，但在第二次被使用时导致注入。
+
+## CSRF：跨站请求伪造
+
+防御方式：CSRF Token（服务端生成随机 token 嵌入表单）+ SameSite Cookie（限制第三方请求是否携带 cookie）。SameSite=Lax 是大多数 Web 应用的推荐选择。
+
+## 认证与鉴权
+
+JWT 的常见问题：使用弱密钥、不验证签名算法、把 JWT 放在 localStorage。修复：使用强随机密钥、始终验证签名、放在 HttpOnly cookie。
+
+密码存储：永远不要用 MD5 或 SHA-256。使用 bcrypt 或 argon2id。
+
+## HTTPS 与 TLS
+
+只开 TLSv1.2 和 TLSv1.3，关掉老版本。启用 HSTS。使用 SSL Labs 测试配置，目标 A+ 评级。
+
+## CORS
+
+不要反射 Origin 头，不要允许所有来源。只允许特定来源，配置 methods 和 allowedHeaders。
+
+## CSP
+
+使用 nonce 允许特定脚本执行。避免 `unsafe-inline` 和 `unsafe-eval`。配置 `frame-ancestors 'none'` 防止点击劫持。
+
+## 速率限制
+
+登录接口、密码重置接口必须做速率限制。实现账户锁定策略——5 次失败后锁定 30 分钟。
+
+## 输入验证
+
+白名单优于黑名单。所有字符串输入都要限制最大长度。数字类型要验证是否真的是数字。
+
+## 安全响应头
+
+X-Frame-Options（防止点击劫持）、X-Content-Type-Options（防止 MIME 嗅探）、Referrer-Policy（控制 Referrer 信息泄露）、Permissions-Policy（限制权限 API）。
+
+## API 安全
+
+API Key 认证、基于角色的访问控制（RBAC）、输入验证、输出编码、敏感数据过滤。
+
+## 容器与部署安全
+
+Docker 使用非 root 用户、依赖安全扫描（npm audit、Snyk）、SAST（Semgrep、SonarQube）、DAST（OWASP ZAP）。
+
+## 安全日志与监控
+
+记录所有认证事件、权限变更、数据修改操作、异常请求。日志中不要记录密码、信用卡号、Session Token。
+
+## 总结
+
+安全不是一次性的任务，而是持续的过程。把安全测试加入 CI/CD，定期更新依赖，对开发团队做安全培训，建立漏洞响应流程。
+$doc$,
+    NULL,
+    'published',
+    NOW() - INTERVAL '3 days',
+    NOW() - INTERVAL '3 days',
+    NOW() - INTERVAL '3 days'
 )
 ;
 

@@ -3,8 +3,8 @@
 
 -- 先创建测试用户（如果不存在）
 INSERT INTO users (username, email, password_hash, role)
-VALUES ('testuser', 'test@example.com', '$argon2id$v=19$m=65536,t=3,p=4$testtesttesttesttesttesttest$testtesttesttesttesttesttesttesttesttest', 'admin')
-ON CONFLICT (username) DO NOTHING;
+SELECT 'testuser', 'test@example.com', '$argon2id$v=19$m=65536,t=3,p=4$testtesttesttesttesttesttest$testtesttesttesttesttesttesttesttesttest', 'admin'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE role = 'admin');
 
 -- 插入测试文章
 INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
@@ -5430,10 +5430,10 @@ processor.process_large_dataset([1, 2, 3, 4, 5])
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
-    'draft',
-    NULL,
-    NOW(),
-    NOW()
+    'published',
+    NOW() - INTERVAL '5 days',
+    NOW() - INTERVAL '5 days',
+    NOW() - INTERVAL '5 days'
 ),
 (
     1,
@@ -7768,10 +7768,10 @@ print(f"内存节省: {(1 - slot_size/regular_size) * 100:.1f}%")
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
-    'draft',
-    NULL,
-    NOW(),
-    NOW()
+    'published',
+    NOW() - INTERVAL '5 days',
+    NOW() - INTERVAL '5 days',
+    NOW() - INTERVAL '5 days'
 ),
 (
     1,
@@ -11050,7 +11050,7 @@ $doc$,
     NOW(),
     NOW(),
     NOW()
-,
+),
 (
     1,
     'PHP 8+ 现代特性完全指南',
@@ -14370,7 +14370,8 @@ SQL 优化是一门实践性很强的技能。读十篇优化文章不如实际�
     NOW() - INTERVAL '19 days',
     NOW() - INTERVAL '19 days',
     NOW() - INTERVAL '19 days'
-);,
+),
+
 (
     1,
     'Scala：融合面向对象与函数式编程',
@@ -19150,9 +19151,8 @@ Assembly 不是要你天天写的语言，但它是理解计算机如何工作�
     NOW() - INTERVAL '27 days',
     NOW() - INTERVAL '27 days',
     NOW() - INTERVAL '27 days'
-);
 )
-ON CONFLICT (slug) DO NOTHING;
+;
 
 -- 重置序列
 SELECT setval('posts_id_seq', COALESCE((SELECT MAX(id) FROM posts), 1), false);

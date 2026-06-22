@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -1043,8 +1043,49 @@ Shell 脚本写多了，你会发现自己在一堆引号和转义符号里迷�
 
 *本文首发于 Yggdrasil 博客*
     $doc$,
-    NULL,
-    'published',
+        NULL,
+        '/images/covers/bash-scripting-guide.jpg',
+        '<ul>
+<li><a href="#变量与引号-bash-的第一道坎">变量与引号：Bash 的第一道坎</a></li>
+<ul>
+<li><a href="#引号的三重境界">引号的三重境界</a></li>
+<li><a href="#特殊变量">特殊变量</a></li>
+</ul>
+<li><a href="#条件测试-方括号里的学问">条件测试：方括号里的学问</a></li>
+<li><a href="#循环结构-for-while-与-until">循环结构：for、while 与 until</a></li>
+<ul>
+<li><a href="#for-循环">for 循环</a></li>
+<li><a href="#while-与-until">while 与 until</a></li>
+</ul>
+<li><a href="#函数定义-作用域是个坑">函数定义：作用域是个坑</a></li>
+<li><a href="#字符串操作-bash-的瑞士军刀">字符串操作：Bash 的瑞士军刀</a></li>
+<li><a href="#数组与关联数组">数组与关联数组</a></li>
+<li><a href="#进程替换-bash-的黑魔法">进程替换：Bash 的黑魔法</a></li>
+<ul>
+<li><a href="#xargs-管道的好搭档">xargs：管道的好搭档</a></li>
+</ul>
+<li><a href="#here-document-与-here-string">Here Document 与 Here String</a></li>
+<li><a href="#后台作业与并行执行">后台作业与并行执行</a></li>
+<li><a href="#trap-优雅地处理信号">Trap：优雅地处理信号</a></li>
+<li><a href="#实用技巧与最佳实践">实用技巧与最佳实践</a></li>
+<ul>
+<li><a href="#严格模式">严格模式</a></li>
+<li><a href="#调试技巧">调试技巧</a></li>
+<li><a href="#处理命令失败">处理命令失败</a></li>
+<li><a href="#正则表达式与文本处理">正则表达式与文本处理</a></li>
+<li><a href="#环境变量与配置文件">环境变量与配置文件</a></li>
+<li><a href="#路径处理">路径处理</a></li>
+<li><a href="#一个完整的实用脚本模板">一个完整的实用脚本模板</a></li>
+</ul>
+<li><a href="#总结">总结</a></li>
+<ul>
+<li><a href="#什么时候用-bash-什么时候不用">什么时候用 Bash，什么时候不用</a></li>
+<li><a href="#常见陷阱速查">常见陷阱速查</a></li>
+</ul>
+</ul>',
+        2450,
+        13,
+        'published',
     NOW() - INTERVAL '25 days',
     NOW() - INTERVAL '25 days',
     NOW() - INTERVAL '25 days'

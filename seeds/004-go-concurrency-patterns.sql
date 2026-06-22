@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -751,6 +751,59 @@ Go 的并发模型以其简洁和高效著称。核心要点：
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
+    '/images/covers/go-concurrency-patterns.jpg',
+    '<ul>
+<li><a href="#goroutine-轻量级并发单元">Goroutine：轻量级并发单元</a></li>
+<ul>
+<li><a href="#使用-waitgroup-等待-goroutine-完成">使用 WaitGroup 等待 goroutine 完成</a></li>
+</ul>
+<li><a href="#channel-goroutine-之间的通信桥梁">Channel：goroutine 之间的通信桥梁</a></li>
+<ul>
+<li><a href="#创建-channel">创建 Channel</a></li>
+<li><a href="#无缓冲-channel">无缓冲 Channel</a></li>
+<li><a href="#有缓冲-channel">有缓冲 Channel</a></li>
+<li><a href="#关闭-channel">关闭 Channel</a></li>
+<li><a href="#单向-channel">单向 Channel</a></li>
+</ul>
+<li><a href="#select-多路复用">Select：多路复用</a></li>
+<ul>
+<li><a href="#超时处理">超时处理</a></li>
+<li><a href="#非阻塞操作">非阻塞操作</a></li>
+<li><a href="#随机选择">随机选择</a></li>
+</ul>
+<li><a href="#常见并发模式">常见并发模式</a></li>
+<ul>
+<li><a href="#1-生产者-消费者模式">1. 生产者-消费者模式</a></li>
+<li><a href="#2-worker-pool-工作池">2. Worker Pool（工作池）</a></li>
+<li><a href="#3-pipeline-管道">3. Pipeline（管道）</a></li>
+<li><a href="#4-fan-out-fan-in-扇出-扇入">4. Fan-out/Fan-in（扇出/扇入）</a></li>
+</ul>
+<li><a href="#context-请求级控制">Context：请求级控制</a></li>
+<ul>
+<li><a href="#context-链式传递">Context 链式传递</a></li>
+</ul>
+<li><a href="#并发模式对比">并发模式对比</a></li>
+<li><a href="#总结">总结</a></li>
+<li><a href="#sync-包高级原语">Sync 包高级原语</a></li>
+<ul>
+<li><a href="#mutex-与-rwmutex">Mutex 与 RWMutex</a></li>
+<li><a href="#once-pool-与-cond">Once、Pool 与 Cond</a></li>
+</ul>
+<li><a href="#go-内存模型与-happens-before">Go 内存模型与 Happens-Before</a></li>
+<ul>
+<li><a href="#channel-的-happens-before-保证">Channel 的 Happens-Before 保证</a></li>
+<li><a href="#其他-happens-before-场景">其他 Happens-Before 场景</a></li>
+</ul>
+<li><a href="#并发调试与性能优化">并发调试与性能优化</a></li>
+<ul>
+<li><a href="#race-detector">Race Detector</a></li>
+<li><a href="#goroutine-leak-检测">Goroutine Leak 检测</a></li>
+<li><a href="#性能分析">性能分析</a></li>
+</ul>
+<li><a href="#总结">总结</a></li>
+</ul>',
+    1551,
+    8,
     'published',
     NOW() - INTERVAL '4 days',
     NOW() - INTERVAL '4 days',

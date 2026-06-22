@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -989,8 +989,53 @@ Flutter 不是银弹。如果你的应用重度依赖平台特定功能（比如
 
 *本文首发于 Yggdrasil 博客*
     $doc$,
-    NULL,
-    'published',
+        NULL,
+        '/images/covers/dart-flutter-crossplatform.jpg',
+        '<ul>
+<li><a href="#dart-语言核心特性">Dart 语言核心特性</a></li>
+<ul>
+<li><a href="#空安全-null-safety">空安全（Null Safety）</a></li>
+<li><a href="#扩展方法-extension-methods">扩展方法（Extension Methods）</a></li>
+<li><a href="#混入-mixin">混入（Mixin）</a></li>
+</ul>
+<li><a href="#flutter-widget-体系">Flutter Widget 体系</a></li>
+<ul>
+<li><a href="#statelesswidget-与-statefulwidget">StatelessWidget 与 StatefulWidget</a></li>
+<li><a href="#布局-widget">布局 Widget</a></li>
+<li><a href="#响应式编程与-stream">响应式编程与 Stream</a></li>
+</ul>
+<li><a href="#状态管理-从简单到复杂">状态管理：从简单到复杂</a></li>
+<ul>
+<li><a href="#方案对比">方案对比</a></li>
+<li><a href="#provider">Provider</a></li>
+<li><a href="#riverpod">Riverpod</a></li>
+<li><a href="#bloc">Bloc</a></li>
+</ul>
+<li><a href="#性能优化">性能优化</a></li>
+<ul>
+<li><a href="#const-构造函数">const 构造函数</a></li>
+<li><a href="#keys-的使用">Keys 的使用</a></li>
+<li><a href="#repaintboundary">RepaintBoundary</a></li>
+<li><a href="#图片优化">图片优化</a></li>
+</ul>
+<li><a href="#平台通道-调用原生代码">平台通道：调用原生代码</a></li>
+<li><a href="#widget-生命周期与渲染原理">Widget 生命周期与渲染原理</a></li>
+<li><a href="#navigation-2-0-声明式路由">Navigation 2.0：声明式路由</a></li>
+<li><a href="#flutter-测试策略">Flutter 测试策略</a></li>
+<li><a href="#buildcontext-深度理解">BuildContext 深度理解</a></li>
+<li><a href="#widget-生命周期与渲染原理">Widget 生命周期与渲染原理</a></li>
+<li><a href="#navigation-2-0-声明式路由">Navigation 2.0：声明式路由</a></li>
+<li><a href="#flutter-测试策略">Flutter 测试策略</a></li>
+<li><a href="#buildcontext-深度理解">BuildContext 深度理解</a></li>
+<li><a href="#flutter-的-key-控制-widget-的复用">Flutter 的 Key：控制 Widget 的复用</a></li>
+<li><a href="#响应式编程-stream-和-rxdart">响应式编程：Stream 和 RxDart</a></li>
+<li><a href="#platform-channel-进阶">Platform Channel 进阶</a></li>
+<li><a href="#发布与构建优化">发布与构建优化</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>',
+        2297,
+        12,
+        'published',
     NOW() - INTERVAL '18 days',
     NOW() - INTERVAL '18 days',
     NOW() - INTERVAL '18 days'

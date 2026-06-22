@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -597,6 +597,47 @@ void moveSemantics() {
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
+    '/images/covers/cpp-raii.jpg',
+    '<ul>
+<li><a href="#什么是-raii">什么是 RAII？</a></li>
+<ul>
+<li><a href="#基础示例-文件句柄">基础示例：文件句柄</a></li>
+</ul>
+<li><a href="#三-五-零法则">三/五/零法则</a></li>
+<ul>
+<li><a href="#三法则-rule-of-three">三法则（Rule of Three）</a></li>
+<li><a href="#五法则-rule-of-five">五法则（Rule of Five）</a></li>
+<li><a href="#零法则-rule-of-zero">零法则（Rule of Zero）</a></li>
+</ul>
+<li><a href="#智能指针">智能指针</a></li>
+<ul>
+<li><a href="#std-unique_ptr-独占所有权">std::unique_ptr：独占所有权</a></li>
+<li><a href="#std-shared_ptr-共享所有权">std::shared_ptr：共享所有权</a></li>
+<li><a href="#std-weak_ptr-弱引用">std::weak_ptr：弱引用</a></li>
+</ul>
+<li><a href="#智能指针对比">智能指针对比</a></li>
+<li><a href="#raii-在标准库中的应用">RAII 在标准库中的应用</a></li>
+<li><a href="#总结">总结</a></li>
+<li><a href="#自定义删除器与资源管理扩展">自定义删除器与资源管理扩展</a></li>
+<ul>
+<li><a href="#unique_ptr-自定义删除器">unique_ptr 自定义删除器</a></li>
+<li><a href="#管理数组资源">管理数组资源</a></li>
+<li><a href="#管理非内存资源">管理非内存资源</a></li>
+</ul>
+<li><a href="#智能指针与多线程">智能指针与多线程</a></li>
+<ul>
+<li><a href="#shared_ptr-的线程安全性">shared_ptr 的线程安全性</a></li>
+<li><a href="#atomic_shared_ptr-c-20">atomic_shared_ptr（C++20）</a></li>
+</ul>
+<li><a href="#性能优化与最佳实践">性能优化与最佳实践</a></li>
+<ul>
+<li><a href="#make_shared-vs-直接构造">make_shared vs 直接构造</a></li>
+<li><a href="#避免-shared_ptr-的性能陷阱">避免 shared_ptr 的性能陷阱</a></li>
+<li><a href="#移动语义与智能指针">移动语义与智能指针</a></li>
+</ul>
+</ul>',
+    1339,
+    7,
     'published',
     NOW() - INTERVAL '1 day',
     NOW() - INTERVAL '1 day',

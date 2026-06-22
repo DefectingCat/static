@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -626,8 +626,41 @@ Assembly 不是要你天天写的语言，但它是理解计算机如何工作�
 
 *本文首发于 Yggdrasil 博客*
     $doc$,
-    NULL,
-    'published',
+        NULL,
+        '/images/covers/assembly-language-intro.jpg',
+        '<ul>
+<li><a href="#x86-64-架构概览">x86-64 架构概览</a></li>
+<ul>
+<li><a href="#通用寄存器">通用寄存器</a></li>
+<li><a href="#指令格式">指令格式</a></li>
+</ul>
+<li><a href="#栈帧与函数调用">栈帧与函数调用</a></li>
+<li><a href="#系统调用-跟内核打交道">系统调用：跟内核打交道</a></li>
+<li><a href="#内存模型与寻址模式">内存模型与寻址模式</a></li>
+<ul>
+<li><a href="#内存段">内存段</a></li>
+</ul>
+<li><a href="#调用约定-abi-的细节">调用约定：ABI 的细节</a></li>
+<ul>
+<li><a href="#system-v-amd64-abi-linux-macos">System V AMD64 ABI（Linux/macOS）</a></li>
+<li><a href="#microsoft-x64-abi-windows">Microsoft x64 ABI（Windows）</a></li>
+</ul>
+<li><a href="#内联汇编-在-c-里嵌入汇编">内联汇编：在 C 里嵌入汇编</a></li>
+<li><a href="#调试技巧-用-gdb-看汇编">调试技巧：用 gdb 看汇编</a></li>
+<ul>
+<li><a href="#一个调试实战">一个调试实战</a></li>
+</ul>
+<li><a href="#编译器优化与汇编">编译器优化与汇编</a></li>
+<ul>
+<li><a href="#内联">内联</a></li>
+<li><a href="#分支预测与缓存优化">分支预测与缓存优化</a></li>
+</ul>
+<li><a href="#simd-一条指令处理多个数据">SIMD：一条指令处理多个数据</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>',
+        1844,
+        10,
+        'published',
     NOW() - INTERVAL '27 days',
     NOW() - INTERVAL '27 days',
     NOW() - INTERVAL '27 days'

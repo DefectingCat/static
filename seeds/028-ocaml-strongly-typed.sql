@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -636,8 +636,27 @@ OCaml 的编译器是我用过的最友好的编译器之一。错误信息清�
 
 *本文首发于 Yggdrasil 博客*
     $doc$,
-    NULL,
-    'published',
+        NULL,
+        '/images/covers/ocaml-strongly-typed.jpg',
+        '<ul>
+<li><a href="#类型推导-编译器比你更懂你的代码">类型推导：编译器比你更懂你的代码</a></li>
+<li><a href="#代数数据类型-用类型描述世界">代数数据类型：用类型描述世界</a></li>
+<li><a href="#模式匹配-比-switch-强大十倍">模式匹配：比 switch 强大十倍</a></li>
+<li><a href="#错误处理-option-result-与异常">错误处理：Option、Result 与异常</a></li>
+<li><a href="#模块系统-比类更强大的抽象工具">模块系统：比类更强大的抽象工具</a></li>
+<ul>
+<li><a href="#签名-接口">签名（接口）</a></li>
+<li><a href="#functor-模块的函数">Functor：模块的函数</a></li>
+</ul>
+<li><a href="#尾递归优化-递归也能高效">尾递归优化：递归也能高效</a></li>
+<li><a href="#与-c-的互操作">与 C 的互操作</a></li>
+<li><a href="#dune-现代化的构建系统">Dune：现代化的构建系统</a></li>
+<li><a href="#reasonml-给-ocaml-穿一件-javascript-的外套">ReasonML：给 OCaml 穿一件 JavaScript 的外套</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>',
+        1869,
+        10,
+        'published',
     NOW() - INTERVAL '26 days',
     NOW() - INTERVAL '26 days',
     NOW() - INTERVAL '26 days'

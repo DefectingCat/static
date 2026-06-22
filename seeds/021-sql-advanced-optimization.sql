@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -818,8 +818,48 @@ SQL 优化是一门实践性很强的技能。读十篇优化文章不如实际�
 
 *本文首发于 Yggdrasil 博客*
     $doc$,
-    NULL,
-    'published',
+        NULL,
+        '/images/covers/sql-advanced-optimization.jpg',
+        '<ul>
+<li><a href="#执行计划分析-优化的起点">执行计划分析：优化的起点</a></li>
+<li><a href="#索引策略-不是越多越好">索引策略：不是越多越好</a></li>
+<ul>
+<li><a href="#b-tree-索引">B-tree 索引</a></li>
+<li><a href="#哈希索引">哈希索引</a></li>
+<li><a href="#覆盖索引">覆盖索引</a></li>
+<li><a href="#不该加索引的场景">不该加索引的场景</a></li>
+</ul>
+<li><a href="#窗口函数-分析查询的利器">窗口函数：分析查询的利器</a></li>
+<li><a href="#cte-递归查询-处理树形结构">CTE 递归查询：处理树形结构</a></li>
+<li><a href="#查询重写技巧">查询重写技巧</a></li>
+<ul>
+<li><a href="#避免-select">避免 SELECT *</a></li>
+<li><a href="#用-exists-替代-in">用 EXISTS 替代 IN</a></li>
+<li><a href="#分页优化">分页优化</a></li>
+<li><a href="#union-all-替代-union">UNION ALL 替代 UNION</a></li>
+<li><a href="#批量插入优化">批量插入优化</a></li>
+</ul>
+<li><a href="#事务隔离级别与并发控制">事务隔离级别与并发控制</a></li>
+<ul>
+<li><a href="#锁机制">锁机制</a></li>
+<li><a href="#死锁检测">死锁检测</a></li>
+</ul>
+<li><a href="#统计信息与查询优化器">统计信息与查询优化器</a></li>
+<li><a href="#分区表-大数据量的利器">分区表：大数据量的利器</a></li>
+<li><a href="#物化视图-预计算复杂查询">物化视图：预计算复杂查询</a></li>
+<li><a href="#连接池-管理好数据库连接">连接池：管理好数据库连接</a></li>
+<li><a href="#查询计划缓存与参数化查询">查询计划缓存与参数化查询</a></li>
+<li><a href="#数据库监控与慢查询分析">数据库监控与慢查询分析</a></li>
+<li><a href="#分区表-大数据量的利器">分区表：大数据量的利器</a></li>
+<li><a href="#物化视图-预计算复杂查询">物化视图：预计算复杂查询</a></li>
+<li><a href="#连接池-管理好数据库连接">连接池：管理好数据库连接</a></li>
+<li><a href="#查询计划缓存与参数化查询">查询计划缓存与参数化查询</a></li>
+<li><a href="#数据库监控与慢查询分析">数据库监控与慢查询分析</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>',
+        2326,
+        12,
+        'published',
     NOW() - INTERVAL '19 days',
     NOW() - INTERVAL '19 days',
     NOW() - INTERVAL '19 days'

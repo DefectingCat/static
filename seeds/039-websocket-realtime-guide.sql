@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -328,6 +328,55 @@ WebSocket 支持 permessage-deflate 扩展，可以压缩消息。
 WebSocket 是实时应用的核心技术。选择 WebSocket 还是 SSE 取决于你的场景是否需要双向通信。如果只需要服务端推送，SSE 更简单。如果需要双向实时通信，WebSocket 是唯一选择。生产环境别忘了心跳机制、认证、多实例部署这些关键问题。
 $doc$,
     NULL,
+    '/images/covers/websocket-realtime-guide.jpg',
+    '<ul>
+<li><a href="#前言">前言</a></li>
+<li><a href="#一-websocket-基础">一、WebSocket 基础</a></li>
+<ul>
+<li><a href="#1-1-协议原理">1.1 协议原理</a></li>
+<li><a href="#1-2-与-http-的区别">1.2 与 HTTP 的区别</a></li>
+<li><a href="#1-3-适用场景">1.3 适用场景</a></li>
+</ul>
+<li><a href="#二-前端实现">二、前端实现</a></li>
+<ul>
+<li><a href="#2-1-原生-websocket-api">2.1 原生 WebSocket API</a></li>
+<li><a href="#2-2-socket-io">2.2 Socket.IO</a></li>
+</ul>
+<li><a href="#三-后端实现">三、后端实现</a></li>
+<ul>
+<li><a href="#3-1-node-js-websocket-服务端">3.1 Node.js WebSocket 服务端</a></li>
+<li><a href="#3-2-心跳机制">3.2 心跳机制</a></li>
+<li><a href="#3-3-优雅关闭">3.3 优雅关闭</a></li>
+</ul>
+<li><a href="#四-多实例部署">四、多实例部署</a></li>
+<ul>
+<li><a href="#4-1-问题">4.1 问题</a></li>
+<li><a href="#4-2-redis-pub-sub">4.2 Redis Pub/Sub</a></li>
+<li><a href="#4-3-sticky-session">4.3 Sticky Session</a></li>
+</ul>
+<li><a href="#五-server-sent-events-sse">五、Server-Sent Events（SSE）</a></li>
+<ul>
+<li><a href="#5-1-sse-vs-websocket">5.1 SSE vs WebSocket</a></li>
+<li><a href="#5-2-前端实现">5.2 前端实现</a></li>
+<li><a href="#5-3-node-js-实现">5.3 Node.js 实现</a></li>
+</ul>
+<li><a href="#六-安全考虑">六、安全考虑</a></li>
+<ul>
+<li><a href="#6-1-认证">6.1 认证</a></li>
+<li><a href="#6-2-防止-ddos">6.2 防止 DDoS</a></li>
+<li><a href="#6-3-数据验证">6.3 数据验证</a></li>
+</ul>
+<li><a href="#七-性能优化">七、性能优化</a></li>
+<ul>
+<li><a href="#7-1-消息压缩">7.1 消息压缩</a></li>
+<li><a href="#7-2-连接池">7.2 连接池</a></li>
+<li><a href="#7-3-水平扩展">7.3 水平扩展</a></li>
+</ul>
+<li><a href="#八-实战-聊天室">八、实战：聊天室</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>',
+    656,
+    4,
     'published',
     NOW() - INTERVAL '8 days',
     NOW() - INTERVAL '8 days',

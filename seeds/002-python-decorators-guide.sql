@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -561,6 +561,37 @@ except ValueError:
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
+    '/images/covers/python-decorators-guide.jpg',
+    '<ul>
+<li><a href="#什么是装饰器">什么是装饰器？</a></li>
+<li><a href="#处理带参数的函数">处理带参数的函数</a></li>
+<li><a href="#使用-functools-wraps-保留元数据">使用 functools.wraps 保留元数据</a></li>
+<li><a href="#参数化装饰器">参数化装饰器</a></li>
+<li><a href="#类装饰器">类装饰器</a></li>
+<ul>
+<li><a href="#基础类装饰器">基础类装饰器</a></li>
+<li><a href="#使用类实现带状态装饰器">使用类实现带状态装饰器</a></li>
+</ul>
+<li><a href="#内置装饰器实战">内置装饰器实战</a></li>
+<ul>
+<li><a href="#property-将方法变为属性">@property：将方法变为属性</a></li>
+<li><a href="#staticmethod-和-classmethod">@staticmethod 和 @classmethod</a></li>
+<li><a href="#functools-lru_cache-自动缓存">@functools.lru_cache：自动缓存</a></li>
+<li><a href="#functools-singledispatch-函数重载">@functools.singledispatch：函数重载</a></li>
+</ul>
+<li><a href="#装饰器组合与顺序">装饰器组合与顺序</a></li>
+<li><a href="#实际应用场景">实际应用场景</a></li>
+<li><a href="#总结">总结</a></li>
+<li><a href="#装饰器模式的高级实战">装饰器模式的高级实战</a></li>
+<ul>
+<li><a href="#带状态的装饰器">带状态的装饰器</a></li>
+<li><a href="#方法装饰器与描述符协议">方法装饰器与描述符协议</a></li>
+<li><a href="#装饰器调试与常见问题">装饰器调试与常见问题</a></li>
+</ul>
+<li><a href="#装饰器设计模式总结">装饰器设计模式总结</a></li>
+</ul>',
+    1349,
+    7,
     'published',
     NOW() - INTERVAL '6 days',
     NOW() - INTERVAL '6 days',

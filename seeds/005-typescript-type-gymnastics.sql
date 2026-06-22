@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -508,6 +508,51 @@ type ComplexType = Lazy<SomeDeepNesting>;
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
+    '/images/covers/typescript-type-gymnastics.jpg',
+    '<ul>
+<li><a href="#为什么需要高级类型">为什么需要高级类型？</a></li>
+<li><a href="#条件类型-conditional-types">条件类型（Conditional Types）</a></li>
+<ul>
+<li><a href="#extends-关键字">extends 关键字</a></li>
+<li><a href="#infer-关键字-类型推断">infer 关键字：类型推断</a></li>
+<li><a href="#内置条件类型">内置条件类型</a></li>
+</ul>
+<li><a href="#映射类型-mapped-types">映射类型（Mapped Types）</a></li>
+<ul>
+<li><a href="#基础映射类型">基础映射类型</a></li>
+<li><a href="#键重映射-key-remapping">键重映射（Key Remapping）</a></li>
+<li><a href="#过滤属性">过滤属性</a></li>
+</ul>
+<li><a href="#模板字面量类型-template-literal-types">模板字面量类型（Template Literal Types）</a></li>
+<ul>
+<li><a href="#基础用法">基础用法</a></li>
+<li><a href="#联合类型的组合">联合类型的组合</a></li>
+<li><a href="#实际应用-css-属性类型">实际应用：CSS 属性类型</a></li>
+</ul>
+<li><a href="#递归类型">递归类型</a></li>
+<li><a href="#类型守卫与类型收窄">类型守卫与类型收窄</a></li>
+<li><a href="#实用类型工具库">实用类型工具库</a></li>
+<li><a href="#总结">总结</a></li>
+<li><a href="#类型挑战与实战">类型挑战与实战</a></li>
+<ul>
+<li><a href="#挑战-1-实现-deeppick">挑战 1：实现 DeepPick</a></li>
+<li><a href="#挑战-2-实现-uniontotuple">挑战 2：实现 UnionToTuple</a></li>
+<li><a href="#挑战-3-实现-allkeys">挑战 3：实现 AllKeys</a></li>
+</ul>
+<li><a href="#类型安全的路由与-api">类型安全的路由与 API</a></li>
+<ul>
+<li><a href="#类型安全的路由参数">类型安全的路由参数</a></li>
+<li><a href="#类型安全的-api-客户端">类型安全的 API 客户端</a></li>
+</ul>
+<li><a href="#编译性能优化">编译性能优化</a></li>
+<ul>
+<li><a href="#1-避免深层嵌套">1. 避免深层嵌套</a></li>
+<li><a href="#2-使用接口而非类型别名">2. 使用接口而非类型别名</a></li>
+<li><a href="#3-延迟类型计算">3. 延迟类型计算</a></li>
+</ul>
+</ul>',
+    1251,
+    7,
     'published',
     NOW() - INTERVAL '3 days',
     NOW() - INTERVAL '3 days',

@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -482,10 +482,25 @@ R 语言是一面镜子——它反映了统计学和数据科学社区的需求
 ---
 
 *本文首发于 Yggdrasil 博客*
-
-    $doc$,
-    NULL,
-    'published',
+     $doc$,
+         NULL,
+         '/images/covers/r-data-science.jpg',
+         '<ul>
+<li><a href="#向量化运算-r-的核心思维方式">向量化运算：R 的核心思维方式</a></li>
+<li><a href="#dplyr-数据处理的艺术">dplyr：数据处理的艺术</a></li>
+<li><a href="#ggplot2-图层的哲学">ggplot2：图层的哲学</a></li>
+<li><a href="#统计建模-从-lm-到-glm">统计建模：从 lm 到 glm</a></li>
+<li><a href="#shiny-让数据动起来">Shiny：让数据动起来</a></li>
+<li><a href="#tidyverse-一个完整的生态系统">tidyverse：一个完整的生态系统</a></li>
+<li><a href="#r-markdown-可重复研究">R Markdown：可重复研究</a></li>
+<li><a href="#数据概览">数据概览</a></li>
+<li><a href="#可视化">可视化</a></li>
+<li><a href="#r-vs-python-该怎么选">R vs Python：该怎么选</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>',
+         1334,
+         7,
+         'published',
     NOW() - INTERVAL '23 days',
     NOW() - INTERVAL '23 days',
     NOW() - INTERVAL '23 days'

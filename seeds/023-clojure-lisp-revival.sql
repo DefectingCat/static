@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -468,10 +468,24 @@ Clojure 适合什么样的人？如果你喜欢函数式编程，如果你厌倦
 ---
 
 *本文首发于 Yggdrasil 博客*
-
-    $doc$,
-    NULL,
-    'published',
+     $doc$,
+         NULL,
+         '/images/covers/clojure-lisp-revival.jpg',
+         '<ul>
+<li><a href="#括号不是问题-s-expression-的真相">括号不是问题：S-expression 的真相</a></li>
+<li><a href="#不可变数据结构-持久化数据结构的妙用">不可变数据结构：持久化数据结构的妙用</a></li>
+<li><a href="#stm-软件事务内存的优雅">STM：软件事务内存的优雅</a></li>
+<li><a href="#宏系统-代码即数据-数据即代码">宏系统：代码即数据，数据即代码</a></li>
+<li><a href="#多方法-超越传统多态">多方法：超越传统多态</a></li>
+<li><a href="#与-java-互操作-站在巨人肩膀上">与 Java 互操作：站在巨人肩膀上</a></li>
+<li><a href="#repl-驱动开发-实时编程">REPL 驱动开发：实时编程</a></li>
+<li><a href="#transducers-高阶抽象的极致">Transducers：高阶抽象的极致</a></li>
+<li><a href="#spec-数据规范与验证">Spec：数据规范与验证</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>',
+         1269,
+         7,
+         'published',
     NOW() - INTERVAL '21 days',
     NOW() - INTERVAL '21 days',
     NOW() - INTERVAL '21 days'

@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -637,6 +637,48 @@ impl ErrorReporter {
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
+    '/images/covers/rust-error-handling.jpg',
+    '<ul>
+<li><a href="#为什么-rust-没有异常">为什么 Rust 没有异常？</a></li>
+<li><a href="#option-类型-处理可能缺失的值">Option 类型：处理可能缺失的值</a></li>
+<ul>
+<li><a href="#基础使用">基础使用</a></li>
+<li><a href="#option-的组合子">Option 的组合子</a></li>
+</ul>
+<li><a href="#result-类型-处理可能失败的操作">Result 类型：处理可能失败的操作</a></li>
+<ul>
+<li><a href="#基础使用">基础使用</a></li>
+<li><a href="#操作符-错误传播">? 操作符：错误传播</a></li>
+<li><a href="#result-的组合子">Result 的组合子</a></li>
+</ul>
+<li><a href="#自定义错误类型">自定义错误类型</a></li>
+<ul>
+<li><a href="#枚举错误类型">枚举错误类型</a></li>
+<li><a href="#使用-thiserror-简化">使用 thiserror 简化</a></li>
+<li><a href="#anyhow-快速原型开发">anyhow：快速原型开发</a></li>
+</ul>
+<li><a href="#option-与-result-的转换">Option 与 Result 的转换</a></li>
+<li><a href="#错误处理最佳实践">错误处理最佳实践</a></li>
+<li><a href="#总结">总结</a></li>
+<li><a href="#错误处理与异步编程">错误处理与异步编程</a></li>
+<ul>
+<li><a href="#异步函数中的错误传播">异步函数中的错误传播</a></li>
+<li><a href="#并发操作中的错误收集">并发操作中的错误收集</a></li>
+<li><a href="#超时与取消">超时与取消</a></li>
+</ul>
+<li><a href="#错误恢复与重试策略">错误恢复与重试策略</a></li>
+<ul>
+<li><a href="#指数退避重试">指数退避重试</a></li>
+<li><a href="#断路器模式">断路器模式</a></li>
+</ul>
+<li><a href="#错误监控与日志记录">错误监控与日志记录</a></li>
+<ul>
+<li><a href="#结构化错误日志">结构化错误日志</a></li>
+<li><a href="#错误聚合与上报">错误聚合与上报</a></li>
+</ul>
+</ul>',
+    1751,
+    9,
     'published',
     NOW() - INTERVAL '2 hours',
     NOW() - INTERVAL '2 hours',

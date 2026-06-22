@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -541,6 +541,48 @@ pub fn main() void {
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
+    '/images/covers/zig-memory-management.jpg',
+    '<ul>
+<li><a href="#显式内存分配">显式内存分配</a></li>
+<ul>
+<li><a href="#基础内存分配">基础内存分配</a></li>
+<li><a href="#不同的分配器策略">不同的分配器策略</a></li>
+<li><a href="#错误处理与内存安全">错误处理与内存安全</a></li>
+</ul>
+<li><a href="#错误处理">错误处理</a></li>
+<ul>
+<li><a href="#错误联合类型">错误联合类型</a></li>
+<li><a href="#try-与-catch">try 与 catch</a></li>
+<li><a href="#errdefer">errdefer</a></li>
+</ul>
+<li><a href="#编译期编程-comptime">编译期编程（Comptime）</a></li>
+<ul>
+<li><a href="#编译期计算">编译期计算</a></li>
+<li><a href="#类型作为参数">类型作为参数</a></li>
+<li><a href="#编译期反射">编译期反射</a></li>
+</ul>
+<li><a href="#c-互操作性">C 互操作性</a></li>
+<li><a href="#zig-的哲学">Zig 的哲学</a></li>
+<li><a href="#总结">总结</a></li>
+<li><a href="#zig-的编译期元编程实战">Zig 的编译期元编程实战</a></li>
+<ul>
+<li><a href="#编译期泛型容器">编译期泛型容器</a></li>
+<li><a href="#编译期状态机生成">编译期状态机生成</a></li>
+</ul>
+<li><a href="#zig-的构建系统与包管理">Zig 的构建系统与包管理</a></li>
+<ul>
+<li><a href="#基础构建配置">基础构建配置</a></li>
+<li><a href="#高级构建功能">高级构建功能</a></li>
+</ul>
+<li><a href="#zig-的性能分析与优化">Zig 的性能分析与优化</a></li>
+<ul>
+<li><a href="#编译期性能优化">编译期性能优化</a></li>
+<li><a href="#内存布局控制">内存布局控制</a></li>
+<li><a href="#simd-与向量化">SIMD 与向量化</a></li>
+</ul>
+</ul>',
+    1323,
+    7,
     'published',
     NOW() - INTERVAL '6 hours',
     NOW() - INTERVAL '6 hours',

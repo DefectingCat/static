@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -614,6 +614,49 @@ processor.process_large_dataset([1, 2, 3, 4, 5])
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
+    '/images/covers/ruby-metaprogramming.jpg',
+    '<ul>
+<li><a href="#什么是元编程">什么是元编程？</a></li>
+<li><a href="#动态方法定义">动态方法定义</a></li>
+<ul>
+<li><a href="#define_method">define_method</a></li>
+<li><a href="#method_missing-拦截不存在的方法">method_missing：拦截不存在的方法</a></li>
+<li><a href="#const_missing-动态加载常量">const_missing：动态加载常量</a></li>
+</ul>
+<li><a href="#打开类-open-classes">打开类（Open Classes）</a></li>
+<ul>
+<li><a href="#使用-refinement-安全地扩展">使用 Refinement 安全地扩展</a></li>
+</ul>
+<li><a href="#类_eval-和-instance_eval">类_eval 和 instance_eval</a></li>
+<ul>
+<li><a href="#class_eval-或-module_eval">class_eval（或 module_eval）</a></li>
+<li><a href="#instance_eval">instance_eval</a></li>
+<li><a href="#instance_exec-带参数">instance_exec（带参数）</a></li>
+</ul>
+<li><a href="#模块与混入-mixins">模块与混入（Mixins）</a></li>
+<ul>
+<li><a href="#prepend-方法前置">prepend：方法前置</a></li>
+</ul>
+<li><a href="#元编程在-rails-中的应用">元编程在 Rails 中的应用</a></li>
+<li><a href="#元编程最佳实践">元编程最佳实践</a></li>
+<li><a href="#总结">总结</a></li>
+<li><a href="#元编程中的反射与内省">元编程中的反射与内省</a></li>
+<ul>
+<li><a href="#对象的自我认知">对象的自我认知</a></li>
+<li><a href="#代码文档化与元数据">代码文档化与元数据</a></li>
+</ul>
+<li><a href="#构建领域特定语言-dsl">构建领域特定语言（DSL）</a></li>
+<ul>
+<li><a href="#声明式配置-dsl">声明式配置 DSL</a></li>
+<li><a href="#构建器模式-dsl">构建器模式 DSL</a></li>
+</ul>
+<li><a href="#元编程高级技巧与性能">元编程高级技巧与性能</a></li>
+<ul>
+<li><a href="#元编程性能优化">元编程性能优化</a></li>
+</ul>
+</ul>',
+    1396,
+    7,
     'published',
     NOW() - INTERVAL '5 days',
     NOW() - INTERVAL '5 days',

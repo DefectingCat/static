@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -447,10 +447,24 @@ Scala 不适合所有人。如果你的团队以 Java 背景为主，强行切 S
 ---
 
 *本文首发于 Yggdrasil 博客*
-
-    $doc$,
-    NULL,
-    'published',
+     $doc$,
+         NULL,
+         '/images/covers/scala-fp-oop.jpg',
+         '<ul>
+<li><a href="#case-class-不可变数据的优雅表达">case class：不可变数据的优雅表达</a></li>
+<li><a href="#模式匹配-不只是-switch-的高级版">模式匹配：不只是 switch 的高级版</a></li>
+<li><a href="#隐式转换-又爱又恨的黑魔法">隐式转换：又爱又恨的黑魔法</a></li>
+<li><a href="#高阶函数与函数组合">高阶函数与函数组合</a></li>
+<li><a href="#特质-trait-比接口更灵活">特质（trait）：比接口更灵活</a></li>
+<li><a href="#for-comprehension-语法糖背后的-monad">for-comprehension：语法糖背后的 monad</a></li>
+<li><a href="#option-与-either-消灭-nullpointerexception">Option 与 Either：消灭 NullPointerException</a></li>
+<li><a href="#akka-actor-并发编程的另一种思路">Akka Actor：并发编程的另一种思路</a></li>
+<li><a href="#future-与异步编程">Future 与异步编程</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>',
+         1482,
+         8,
+         'published',
     NOW() - INTERVAL '20 days',
     NOW() - INTERVAL '20 days',
     NOW() - INTERVAL '20 days'

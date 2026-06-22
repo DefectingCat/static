@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -142,6 +142,40 @@ Server Components 允许组件只在服务端渲染，不发送 JavaScript 到�
 React 18 不是一次 API 层面的大改，而是一次架构层面的升级。迁移成本不高，但需要仔细测试。建议先升级到 React 18，然后逐步引入并发特性。
 $doc$,
     NULL,
+    '/images/covers/react18-guide.jpg',
+    '<ul>
+<li><a href="#写在前面">写在前面</a></li>
+<li><a href="#并发渲染-react-调度机制的根本变化">并发渲染：React 调度机制的根本变化</a></li>
+<ul>
+<li><a href="#什么是-concurrent-mode">什么是 Concurrent Mode</a></li>
+<li><a href="#rendering-与-committing-的分离">Rendering 与 Committing 的分离</a></li>
+</ul>
+<li><a href="#transitions-控制更新优先级的-api">Transitions：控制更新优先级的 API</a></li>
+<ul>
+<li><a href="#usetransition">useTransition</a></li>
+<li><a href="#usedeferredvalue">useDeferredValue</a></li>
+</ul>
+<li><a href="#suspense-声明式的加载状态管理">Suspense：声明式的加载状态管理</a></li>
+<ul>
+<li><a href="#suspense-的工作原理">Suspense 的工作原理</a></li>
+<li><a href="#suspense-边界的设计">Suspense 边界的设计</a></li>
+</ul>
+<li><a href="#流式-ssr-与-hydration">流式 SSR 与 Hydration</a></li>
+<li><a href="#自动批处理-减少不必要的-re-render">自动批处理：减少不必要的 re-render</a></li>
+<li><a href="#新-hooks-详解">新 Hooks 详解</a></li>
+<ul>
+<li><a href="#useid">useId</a></li>
+<li><a href="#usesyncexternalstore">useSyncExternalStore</a></li>
+<li><a href="#useinsertioneffect">useInsertionEffect</a></li>
+</ul>
+<li><a href="#状态管理-zustand-jotai-与-recoil">状态管理：Zustand、Jotai 与 Recoil</a></li>
+<li><a href="#性能优化">性能优化</a></li>
+<li><a href="#server-components">Server Components</a></li>
+<li><a href="#迁移实战">迁移实战</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>',
+    402,
+    3,
     'published',
     NOW() - INTERVAL '5 days',
     NOW() - INTERVAL '5 days',

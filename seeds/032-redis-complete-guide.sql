@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -422,6 +422,61 @@ pipe.execute()
 Redis 的强大在于它的灵活性。理解了五种基础数据结构和它们的内部实现，你就能用 Redis 解决各种各样的问题。不要把 Redis 当成万能的——它最适合的场景是读多写少、数据量不太大、对延迟敏感的场景。
 $doc$,
     NULL,
+    '/images/covers/redis-complete-guide.jpg',
+    '<ul>
+<li><a href="#前言">前言</a></li>
+<li><a href="#一-redis-基础">一、Redis 基础</a></li>
+<ul>
+<li><a href="#1-1-为什么-redis-这么快">1.1 为什么 Redis 这么快</a></li>
+<li><a href="#1-2-安装与配置">1.2 安装与配置</a></li>
+</ul>
+<li><a href="#二-五种基础数据结构">二、五种基础数据结构</a></li>
+<ul>
+<li><a href="#2-1-string">2.1 String</a></li>
+<li><a href="#2-2-hash">2.2 Hash</a></li>
+<li><a href="#2-4-list">2.4 List</a></li>
+<li><a href="#2-5-set">2.5 Set</a></li>
+<li><a href="#2-6-sorted-set-zset">2.6 Sorted Set（ZSet）</a></li>
+</ul>
+<li><a href="#三-高级数据结构">三、高级数据结构</a></li>
+<ul>
+<li><a href="#3-1-hyperloglog">3.1 HyperLogLog</a></li>
+<li><a href="#3-2-bitmap">3.2 Bitmap</a></li>
+<li><a href="#3-3-stream">3.3 Stream</a></li>
+</ul>
+<li><a href="#四-过期与淘汰策略">四、过期与淘汰策略</a></li>
+<ul>
+<li><a href="#4-1-设置过期时间">4.1 设置过期时间</a></li>
+<li><a href="#4-2-内存淘汰策略">4.2 内存淘汰策略</a></li>
+</ul>
+<li><a href="#五-持久化机制">五、持久化机制</a></li>
+<ul>
+<li><a href="#5-1-rdb">5.1 RDB</a></li>
+<li><a href="#5-2-aof">5.2 AOF</a></li>
+<li><a href="#5-3-混合持久化">5.3 混合持久化</a></li>
+</ul>
+<li><a href="#六-发布订阅">六、发布订阅</a></li>
+<li><a href="#七-lua-脚本">七、Lua 脚本</a></li>
+<li><a href="#八-分布式锁">八、分布式锁</a></li>
+<ul>
+<li><a href="#8-1-基本实现">8.1 基本实现</a></li>
+<li><a href="#8-2-redlock-算法">8.2 Redlock 算法</a></li>
+</ul>
+<li><a href="#九-集群方案">九、集群方案</a></li>
+<ul>
+<li><a href="#9-1-redis-sentinel">9.1 Redis Sentinel</a></li>
+<li><a href="#9-2-redis-cluster">9.2 Redis Cluster</a></li>
+</ul>
+<li><a href="#十-性能优化">十、性能优化</a></li>
+<ul>
+<li><a href="#10-1-pipeline">10.1 Pipeline</a></li>
+<li><a href="#10-2-大-key-问题">10.2 大 Key 问题</a></li>
+<li><a href="#10-3-热-key-问题">10.3 热 Key 问题</a></li>
+</ul>
+<li><a href="#结尾">结尾</a></li>
+</ul>',
+    760,
+    4,
     'published',
     NOW() - INTERVAL '13 days',
     NOW() - INTERVAL '13 days',

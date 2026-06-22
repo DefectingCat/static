@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -677,6 +677,53 @@ class DataLoader {
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
+    '/images/covers/js-async-programming.jpg',
+    '<ul>
+<li><a href="#回调函数-异步编程的起点">回调函数：异步编程的起点</a></li>
+<ul>
+<li><a href="#1-回调地狱-callback-hell">1. 回调地狱（Callback Hell）</a></li>
+<li><a href="#2-错误处理困难">2. 错误处理困难</a></li>
+</ul>
+<li><a href="#promise-优雅的异步解决方案">Promise：优雅的异步解决方案</a></li>
+<ul>
+<li><a href="#promise-的基本用法">Promise 的基本用法</a></li>
+<li><a href="#promise-链式调用">Promise 链式调用</a></li>
+<li><a href="#promise-all-和-promise-race">Promise.all 和 Promise.race</a></li>
+</ul>
+<li><a href="#async-await-异步代码的同步写法">Async/Await：异步代码的同步写法</a></li>
+<ul>
+<li><a href="#async-await-的优势">async/await 的优势</a></li>
+<li><a href="#并行执行-await">并行执行 await</a></li>
+</ul>
+<li><a href="#事件循环-javascript-的并发心脏">事件循环：JavaScript 的并发心脏</a></li>
+<ul>
+<li><a href="#调用栈-call-stack">调用栈（Call Stack）</a></li>
+<li><a href="#任务队列-task-queue">任务队列（Task Queue）</a></li>
+<li><a href="#宏任务与微任务">宏任务与微任务</a></li>
+<li><a href="#经典示例分析">经典示例分析</a></li>
+<li><a href="#更复杂的示例">更复杂的示例</a></li>
+</ul>
+<li><a href="#现代异步模式">现代异步模式</a></li>
+<ul>
+<li><a href="#1-for-await-of-循环">1. for-await-of 循环</a></li>
+<li><a href="#2-abortcontroller-取消请求">2. AbortController 取消请求</a></li>
+<li><a href="#3-top-level-await-es2022">3. Top-level await（ES2022）</a></li>
+</ul>
+<li><a href="#总结">总结</a></li>
+<li><a href="#异步编程高级模式">异步编程高级模式</a></li>
+<ul>
+<li><a href="#1-promise-并发控制">1. Promise 并发控制</a></li>
+<li><a href="#2-异步任务队列">2. 异步任务队列</a></li>
+<li><a href="#3-异步错误处理与重试机制">3. 异步错误处理与重试机制</a></li>
+</ul>
+<li><a href="#现代异步编程最佳实践">现代异步编程最佳实践</a></li>
+<ul>
+<li><a href="#循环中的异步操作注意事项">循环中的异步操作注意事项</a></li>
+<li><a href="#内存管理与泄漏预防">内存管理与泄漏预防</a></li>
+</ul>
+</ul>',
+    1420,
+    8,
     'published',
     NOW() - INTERVAL '5 days',
     NOW() - INTERVAL '5 days',

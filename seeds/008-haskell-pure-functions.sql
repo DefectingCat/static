@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -495,6 +495,53 @@ Haskell 可能不是最适合所有场景的语言，但它所倡导的函数式
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
+    '/images/covers/haskell-pure-functions.jpg',
+    '<ul>
+<li><a href="#纯函数-pure-functions">纯函数（Pure Functions）</a></li>
+<ul>
+<li><a href="#纯函数示例">纯函数示例</a></li>
+<li><a href="#纯函数的优势">纯函数的优势</a></li>
+</ul>
+<li><a href="#高阶函数-higher-order-functions">高阶函数（Higher-Order Functions）</a></li>
+<ul>
+<li><a href="#自定义高阶函数">自定义高阶函数</a></li>
+</ul>
+<li><a href="#惰性求值-lazy-evaluation">惰性求值（Lazy Evaluation）</a></li>
+<ul>
+<li><a href="#无限列表">无限列表</a></li>
+<li><a href="#列表推导式">列表推导式</a></li>
+<li><a href="#惰性求值的实际应用">惰性求值的实际应用</a></li>
+</ul>
+<li><a href="#类型系统与类型类">类型系统与类型类</a></li>
+<li><a href="#monad-处理副作用的优雅方式">Monad：处理副作用的优雅方式</a></li>
+<ul>
+<li><a href="#maybe-monad-处理可能失败的计算">Maybe Monad：处理可能失败的计算</a></li>
+<li><a href="#io-monad-处理输入输出">IO Monad：处理输入输出</a></li>
+<li><a href="#常用-monad">常用 Monad</a></li>
+</ul>
+<li><a href="#总结">总结</a></li>
+<li><a href="#functor-applicative-与-monad-进阶">Functor、Applicative 与 Monad 进阶</a></li>
+<ul>
+<li><a href="#functor">Functor</a></li>
+<li><a href="#applicative-functor">Applicative Functor</a></li>
+<li><a href="#monad-与-applicative-的关系">Monad 与 Applicative 的关系</a></li>
+</ul>
+<li><a href="#monad-转换器实战">Monad 转换器实战</a></li>
+<ul>
+<li><a href="#常见-monad-转换器">常见 Monad 转换器</a></li>
+<li><a href="#构建-web-应用风格的-monad-栈">构建 Web 应用风格的 Monad 栈</a></li>
+<li><a href="#monad-转换器选择指南">Monad 转换器选择指南</a></li>
+</ul>
+<li><a href="#函数式编程模式">函数式编程模式</a></li>
+<ul>
+<li><a href="#递归模式与-catamorphism">递归模式与 Catamorphism</a></li>
+<li><a href="#lens-函数式数据操作">Lens：函数式数据操作</a></li>
+<li><a href="#设计模式对比">设计模式对比</a></li>
+</ul>
+<li><a href="#总结">总结</a></li>
+</ul>',
+    1203,
+    7,
     'published',
     NOW() - INTERVAL '12 hours',
     NOW() - INTERVAL '12 hours',

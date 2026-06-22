@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -75,6 +75,25 @@ stub_status 提供基本的连接统计。配合 nginx-vts-exporter 可以把指
 Nginx 入门不难但精通需要时间。每次线上出问题回头看，往往都是配置里某个参数没调对。建议把线上验证过的配置模板化，新项目直接用。配置改之前一定跑 `nginx -t`。
 $doc$,
     NULL,
+    '/images/covers/nginx-performance-guide.jpg',
+    '<ul>
+<li><a href="#1-nginx-的架构-master-worker-模型">1. Nginx 的架构：master-worker 模型</a></li>
+<li><a href="#2-虚拟主机与-server_name-匹配">2. 虚拟主机与 server_name 匹配</a></li>
+<li><a href="#3-location-匹配规则">3. location 匹配规则</a></li>
+<li><a href="#4-upstream-代理与负载均衡">4. upstream 代理与负载均衡</a></li>
+<li><a href="#5-ssl-tls-配置">5. SSL/TLS 配置</a></li>
+<li><a href="#6-缓存配置">6. 缓存配置</a></li>
+<li><a href="#7-限流与访问控制">7. 限流与访问控制</a></li>
+<li><a href="#8-安全加固">8. 安全加固</a></li>
+<li><a href="#9-性能调优">9. 性能调优</a></li>
+<li><a href="#10-lua-集成与-openresty">10. Lua 集成与 OpenResty</a></li>
+<li><a href="#11-websocket-代理">11. WebSocket 代理</a></li>
+<li><a href="#12-监控">12. 监控</a></li>
+<li><a href="#13-常见问题排查">13. 常见问题排查</a></li>
+<li><a href="#结尾">结尾</a></li>
+</ul>',
+    294,
+    2,
     'published',
     NOW() - INTERVAL '3 days',
     NOW() - INTERVAL '3 days',

@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -568,6 +568,82 @@ GFM 支持使用 HTML `<details>` 标签创建可折叠内容：
 *本文用于测试 Markdown 渲染引擎的兼容性。*
 $doc$,
     NULL,
+    '/images/covers/markdown-syntax-test.jpg',
+    '<ul>
+<li><a href="#文本格式">文本格式</a></li>
+<ul>
+<li><a href="#强调嵌套">强调嵌套</a></li>
+<li><a href="#转义字符">转义字符</a></li>
+</ul>
+<li><a href="#标题层级">标题层级</a></li>
+<ul>
+<li><a href="#三级标题">三级标题</a></li>
+<ul>
+<li><a href="#四级标题">四级标题</a></li>
+</ul>
+</ul>
+<li><a href="#列表">列表</a></li>
+<ul>
+<li><a href="#无序列表">无序列表</a></li>
+<li><a href="#有序列表">有序列表</a></li>
+<li><a href="#任务列表">任务列表</a></li>
+</ul>
+<li><a href="#引用块">引用块</a></li>
+<ul>
+<li><a href="#引用块中的其他元素">引用块中的其他元素</a></li>
+</ul>
+<li><a href="#代码块">代码块</a></li>
+<ul>
+<li><a href="#python">Python</a></li>
+<li><a href="#rust">Rust</a></li>
+<li><a href="#javascript">JavaScript</a></li>
+<li><a href="#go">Go</a></li>
+<li><a href="#json">JSON</a></li>
+<li><a href="#sql">SQL</a></li>
+<li><a href="#bash">Bash</a></li>
+<li><a href="#行内代码高亮">行内代码高亮</a></li>
+</ul>
+<li><a href="#表格">表格</a></li>
+<ul>
+<li><a href="#基础表格">基础表格</a></li>
+<li><a href="#对齐方式">对齐方式</a></li>
+</ul>
+<li><a href="#水平线">水平线</a></li>
+<li><a href="#链接">链接</a></li>
+<ul>
+<li><a href="#行内链接">行内链接</a></li>
+<li><a href="#引用式链接">引用式链接</a></li>
+</ul>
+<li><a href="#图片">图片</a></li>
+<li><a href="#html-内嵌">HTML 内嵌</a></li>
+<li><a href="#特殊字符">特殊字符</a></li>
+<li><a href="#脚注">脚注</a></li>
+<li><a href="#数学公式-latex">数学公式（LaTeX）</a></li>
+<ul>
+<li><a href="#行内公式">行内公式</a></li>
+<li><a href="#块级公式">块级公式</a></li>
+<li><a href="#矩阵与分段函数">矩阵与分段函数</a></li>
+<li><a href="#常用数学符号测试">常用数学符号测试</a></li>
+</ul>
+<li><a href="#mermaid-图表">Mermaid 图表</a></li>
+<ul>
+<li><a href="#流程图">流程图</a></li>
+<li><a href="#时序图">时序图</a></li>
+<li><a href="#类图">类图</a></li>
+<li><a href="#支持的图表类型">支持的图表类型</a></li>
+</ul>
+<li><a href="#复杂表格与嵌套元素">复杂表格与嵌套元素</a></li>
+<ul>
+<li><a href="#跨列与复杂对齐">跨列与复杂对齐</a></li>
+<li><a href="#表格内使用-markdown">表格内使用 Markdown</a></li>
+<li><a href="#复杂嵌套列表示例">复杂嵌套列表示例</a></li>
+<li><a href="#定义列表">定义列表</a></li>
+<li><a href="#折叠块">折叠块</a></li>
+</ul>
+<li><a href="#总结">总结</a></li>
+</ul>',
+    1089,
+    6,
     'published',
     NOW() - INTERVAL '3 hours',
     NOW() - INTERVAL '3 hours',

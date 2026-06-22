@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -658,6 +658,61 @@ Elixir 的并发和容错能力源于其独特的设计哲学：
 通过掌握这些概念，你可以构建出真正高可用、容错的分布式系统，充分利用多核 CPU 和集群环境。
 $doc$,
     NULL,
+    '/images/covers/elixir-concurrency.jpg',
+    '<ul>
+<li><a href="#为什么选择-elixir">为什么选择 Elixir？</a></li>
+<li><a href="#elixir-进程模型">Elixir 进程模型</a></li>
+<ul>
+<li><a href="#轻量级进程">轻量级进程</a></li>
+<li><a href="#进程隔离">进程隔离</a></li>
+</ul>
+<li><a href="#消息传递机制">消息传递机制</a></li>
+<ul>
+<li><a href="#异步消息">异步消息</a></li>
+<li><a href="#消息邮箱">消息邮箱</a></li>
+</ul>
+<li><a href="#genserver-状态机模式">GenServer：状态机模式</a></li>
+<ul>
+<li><a href="#genserver-回调详解">GenServer 回调详解</a></li>
+</ul>
+<li><a href="#supervisor-监督策略">Supervisor 监督策略</a></li>
+<ul>
+<li><a href="#容错哲学-let-it-crash">容错哲学：Let it crash</a></li>
+<li><a href="#监督策略对比">监督策略对比</a></li>
+<li><a href="#重启策略">重启策略</a></li>
+</ul>
+<li><a href="#容错机制实践">容错机制实践</a></li>
+<ul>
+<li><a href="#链接进程-linking">链接进程（Linking）</a></li>
+<li><a href="#监控进程-monitoring">监控进程（Monitoring）</a></li>
+<li><a href="#选择策略">选择策略</a></li>
+</ul>
+<li><a href="#分布式-elixir">分布式 Elixir</a></li>
+<ul>
+<li><a href="#节点间通信">节点间通信</a></li>
+<li><a href="#分布式任务">分布式任务</a></li>
+</ul>
+<li><a href="#实际应用-构建容错计数器">实际应用：构建容错计数器</a></li>
+<li><a href="#otp-application-与系统启动">OTP Application 与系统启动</a></li>
+<ul>
+<li><a href="#application-行为">Application 行为</a></li>
+<li><a href="#启动阶段与依赖">启动阶段与依赖</a></li>
+</ul>
+<li><a href="#ets-与并发数据共享">ETS 与并发数据共享</a></li>
+<ul>
+<li><a href="#ets-表类型与用例">ETS 表类型与用例</a></li>
+<li><a href="#ets-安全模型">ETS 安全模型</a></li>
+</ul>
+<li><a href="#并发测试与-exunit">并发测试与 ExUnit</a></li>
+<ul>
+<li><a href="#异步测试">异步测试</a></li>
+<li><a href="#测试并发行为">测试并发行为</a></li>
+<li><a href="#exunit-特性一览">ExUnit 特性一览</a></li>
+</ul>
+<li><a href="#总结">总结</a></li>
+</ul>',
+    1505,
+    8,
     'published',
     NOW() - INTERVAL '30 minutes',
     NOW() - INTERVAL '30 minutes',

@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -815,8 +815,37 @@ gRPC 基于 HTTP/2，支持流式传输、头部压缩、多路复用。在微�
 
 *本文首发于 Yggdrasil 博客*
     $doc$,
-    NULL,
-    'published',
+        NULL,
+        '/images/covers/csharp-dotnet-ecosystem.jpg',
+        '<ul>
+<li><a href="#linq-革命性的数据查询">LINQ：革命性的数据查询</a></li>
+<li><a href="#async-await-异步编程的黄金标准">Async/Await：异步编程的黄金标准</a></li>
+<li><a href="#span-t-零拷贝内存操作">Span<T>：零拷贝内存操作</a></li>
+<li><a href="#记录类型-record-不可变数据的优雅表达">记录类型（Record）：不可变数据的优雅表达</a></li>
+<li><a href="#模式匹配-比-switch-强大十倍">模式匹配：比 switch 强大十倍</a></li>
+<li><a href="#依赖注入-net-的核心设计模式">依赖注入：.NET 的核心设计模式</a></li>
+<li><a href="#asp-net-core-现代化的-web-框架">ASP.NET Core：现代化的 Web 框架</a></li>
+<li><a href="#entity-framework-core-现代化的-orm">Entity Framework Core：现代化的 ORM</a></li>
+<li><a href="#net-性能优化技巧">.NET 性能优化技巧</a></li>
+<ul>
+<li><a href="#对象池">对象池</a></li>
+<li><a href="#valuetask">ValueTask</a></li>
+<li><a href="#source-generators">Source Generators</a></li>
+</ul>
+<li><a href="#net-gc-与内存管理">.NET GC 与内存管理</a></li>
+<li><a href="#net-配置系统">.NET 配置系统</a></li>
+<li><a href="#aot-编译-net-的未来">AOT 编译：.NET 的未来</a></li>
+<li><a href="#net-gc-与内存管理">.NET GC 与内存管理</a></li>
+<li><a href="#net-配置系统">.NET 配置系统</a></li>
+<li><a href="#aot-编译-net-的未来">AOT 编译：.NET 的未来</a></li>
+<li><a href="#中间件与管道">中间件与管道</a></li>
+<li><a href="#验证与模型绑定">验证与模型绑定</a></li>
+<li><a href="#grpc-高性能-rpc">gRPC：高性能 RPC</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>',
+        2050,
+        11,
+        'published',
     NOW() - INTERVAL '17 days',
     NOW() - INTERVAL '17 days',
     NOW() - INTERVAL '17 days'

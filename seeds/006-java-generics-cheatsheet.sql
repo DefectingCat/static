@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -683,6 +683,45 @@ class User {
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
+    '/images/covers/java-generics-cheatsheet.jpg',
+    '<ul>
+<li><a href="#泛型的基础概念">泛型的基础概念</a></li>
+<ul>
+<li><a href="#泛型类">泛型类</a></li>
+<li><a href="#泛型方法">泛型方法</a></li>
+<li><a href="#类型参数的约束">类型参数的约束</a></li>
+</ul>
+<li><a href="#通配符-wildcards">通配符（Wildcards）</a></li>
+<ul>
+<li><a href="#无界通配符">无界通配符 ?</a></li>
+<li><a href="#上界通配符-extends-t">上界通配符 ? extends T</a></li>
+<li><a href="#下界通配符-super-t">下界通配符 ? super T</a></li>
+</ul>
+<li><a href="#pecs-原则">PECS 原则</a></li>
+<ul>
+<li><a href="#实际案例-collections-copy">实际案例：Collections.copy</a></li>
+<li><a href="#实战示例">实战示例</a></li>
+</ul>
+<li><a href="#类型擦除-type-erasure">类型擦除（Type Erasure）</a></li>
+<ul>
+<li><a href="#类型擦除的影响">类型擦除的影响</a></li>
+</ul>
+<li><a href="#泛型与继承">泛型与继承</a></li>
+<li><a href="#总结">总结</a></li>
+<li><a href="#泛型在集合框架中的深度应用">泛型在集合框架中的深度应用</a></li>
+<ul>
+<li><a href="#集合的泛型层次结构">集合的泛型层次结构</a></li>
+<li><a href="#自定义泛型集合">自定义泛型集合</a></li>
+</ul>
+<li><a href="#泛型与函数式编程">泛型与函数式编程</a></li>
+<ul>
+<li><a href="#stream-api-中的泛型">Stream API 中的泛型</a></li>
+<li><a href="#自定义函数式接口">自定义函数式接口</a></li>
+</ul>
+<li><a href="#实战-类型安全的缓存系统">实战：类型安全的缓存系统</a></li>
+</ul>',
+    1711,
+    9,
     'published',
     NOW() - INTERVAL '2 days',
     NOW() - INTERVAL '2 days',

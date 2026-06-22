@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -466,10 +466,24 @@ Julia 的弱点也很明显：编译时间慢（JIT 的代价）、包生态系�
 ---
 
 *本文首发于 Yggdrasil 博客*
-
-    $doc$,
-    NULL,
-    'published',
+     $doc$,
+         NULL,
+         '/images/covers/julia-scientific-computing.jpg',
+         '<ul>
+<li><a href="#多重派发-julia-的设计灵魂">多重派发：Julia 的设计灵魂</a></li>
+<li><a href="#类型系统-灵活与性能的平衡">类型系统：灵活与性能的平衡</a></li>
+<li><a href="#数组操作-向量化与广播">数组操作：向量化与广播</a></li>
+<li><a href="#并行计算-从多核到分布式">并行计算：从多核到分布式</a></li>
+<li><a href="#与-python-c-互操作-拥抱现有生态">与 Python/C 互操作：拥抱现有生态</a></li>
+<li><a href="#plots-jl-可视化生态">Plots.jl：可视化生态</a></li>
+<li><a href="#微分方程-differentialequations-jl">微分方程：DifferentialEquations.jl</a></li>
+<li><a href="#性能优化-让代码飞起来的技巧">性能优化：让代码飞起来的技巧</a></li>
+<li><a href="#元编程-代码生成的艺术">元编程：代码生成的艺术</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>',
+         1217,
+         7,
+         'published',
     NOW() - INTERVAL '22 days',
     NOW() - INTERVAL '22 days',
     NOW() - INTERVAL '22 days'

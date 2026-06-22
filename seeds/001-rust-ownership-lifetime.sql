@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -495,6 +495,56 @@ Rust 的设计证明：**安全不需要牺牲性能**。通过将安全检查�
 *本文首发于 Yggdrasil 博客，转载请注明出处。*
 $doc$,
     NULL,
+    '/images/covers/rust-ownership-lifetime.jpg',
+    '<ul>
+<li><a href="#为什么需要所有权">为什么需要所有权？</a></li>
+<li><a href="#所有权的三条基本规则">所有权的三条基本规则</a></li>
+<ul>
+<li><a href="#所有权转移示例">所有权转移示例</a></li>
+<li><a href="#copy-trait-与-clone-trait">Copy trait 与 Clone trait</a></li>
+</ul>
+<li><a href="#借用-borrowing-安全地共享数据">借用（Borrowing）：安全地共享数据</a></li>
+<ul>
+<li><a href="#不可变借用-immutable-borrowing">不可变借用（Immutable Borrowing）</a></li>
+<li><a href="#可变借用-mutable-borrowing">可变借用（Mutable Borrowing）</a></li>
+<li><a href="#借用规则">借用规则</a></li>
+</ul>
+<li><a href="#生命周期-lifetime-引用的有效期">生命周期（Lifetime）：引用的有效期</a></li>
+<ul>
+<li><a href="#显式生命周期注解">显式生命周期注解</a></li>
+<li><a href="#结构体中的生命周期">结构体中的生命周期</a></li>
+<li><a href="#生命周期省略规则">生命周期省略规则</a></li>
+</ul>
+<li><a href="#static-生命周期">''static 生命周期</a></li>
+<li><a href="#生命周期与闭包">生命周期与闭包</a></li>
+<li><a href="#常见陷阱与最佳实践">常见陷阱与最佳实践</a></li>
+<ul>
+<li><a href="#1-悬垂引用-dangling-references">1. 悬垂引用（Dangling References）</a></li>
+<li><a href="#2-内部可变性-interior-mutability">2. 内部可变性（Interior Mutability）</a></li>
+<li><a href="#3-智能指针与所有权">3. 智能指针与所有权</a></li>
+</ul>
+<li><a href="#总结">总结</a></li>
+<li><a href="#所有权与并发安全">所有权与并发安全</a></li>
+<ul>
+<li><a href="#send-与-sync-trait">Send 与 Sync trait</a></li>
+<li><a href="#跨线程共享数据">跨线程共享数据</a></li>
+<li><a href="#通道-channel-通信">通道（Channel）通信</a></li>
+</ul>
+<li><a href="#高级生命周期模式">高级生命周期模式</a></li>
+<ul>
+<li><a href="#生命周期子类型化">生命周期子类型化</a></li>
+<li><a href="#hrtb-高阶-trait-bound">HRTB（高阶 trait bound）</a></li>
+<li><a href="#自我指涉结构体">自我指涉结构体</a></li>
+</ul>
+<li><a href="#所有权系统的性能影响">所有权系统的性能影响</a></li>
+<ul>
+<li><a href="#零成本抽象">零成本抽象</a></li>
+<li><a href="#优化机会">优化机会</a></li>
+<li><a href="#与-c-c-的性能对比">与 C/C++ 的性能对比</a></li>
+</ul>
+</ul>',
+    1134,
+    6,
     'published',
     NOW() - INTERVAL '7 days',
     NOW() - INTERVAL '7 days',

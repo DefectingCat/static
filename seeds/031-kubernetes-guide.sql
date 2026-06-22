@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -326,6 +326,69 @@ Flux 是另一个流行的 GitOps 工具，由 Weaveworks 开发。它的架构�
 Kubernetes 的学习曲线很陡，但一旦你的集群稳定运行起来，它带来的效率提升是显著的。从一个小集群开始，先把无状态服务迁移上去，积累经验后再处理有状态服务。不要试图一步到位——K8s 生态太庞大了，一步一步来。
 $doc$,
     NULL,
+    '/images/covers/kubernetes-guide.jpg',
+    '<ul>
+<li><a href="#前言">前言</a></li>
+<li><a href="#一-核心架构">一、核心架构</a></li>
+<ul>
+<li><a href="#1-1-控制平面">1.1 控制平面</a></li>
+<li><a href="#1-2-工作节点">1.2 工作节点</a></li>
+</ul>
+<li><a href="#二-pod-与调度">二、Pod 与调度</a></li>
+<ul>
+<li><a href="#2-1-pod-设计原则">2.1 Pod 设计原则</a></li>
+<li><a href="#2-2-资源请求与限制">2.2 资源请求与限制</a></li>
+<li><a href="#2-3-调度策略">2.3 调度策略</a></li>
+<li><a href="#2-4-污点与容忍">2.4 污点与容忍</a></li>
+</ul>
+<li><a href="#三-工作负载">三、工作负载</a></li>
+<ul>
+<li><a href="#3-1-deployment">3.1 Deployment</a></li>
+<li><a href="#3-2-statefulset">3.2 StatefulSet</a></li>
+<li><a href="#3-3-daemonset">3.3 DaemonSet</a></li>
+<li><a href="#3-4-job-和-cronjob">3.4 Job 和 CronJob</a></li>
+</ul>
+<li><a href="#四-服务发现与网络">四、服务发现与网络</a></li>
+<ul>
+<li><a href="#4-1-service-类型">4.1 Service 类型</a></li>
+<li><a href="#4-2-ingress">4.2 Ingress</a></li>
+<li><a href="#4-3-network-policy">4.3 Network Policy</a></li>
+</ul>
+<li><a href="#五-配置管理与-secrets">五、配置管理与 Secrets</a></li>
+<ul>
+<li><a href="#5-1-configmap">5.1 ConfigMap</a></li>
+<li><a href="#5-2-secrets">5.2 Secrets</a></li>
+</ul>
+<li><a href="#六-存储">六、存储</a></li>
+<ul>
+<li><a href="#6-1-persistent-volume">6.1 Persistent Volume</a></li>
+</ul>
+<li><a href="#七-helm">七、Helm</a></li>
+<ul>
+<li><a href="#7-1-为什么用-helm">7.1 为什么用 Helm</a></li>
+<li><a href="#7-2-chart-结构">7.2 Chart 结构</a></li>
+<li><a href="#7-3-helm-最佳实践">7.3 Helm 最佳实践</a></li>
+</ul>
+<li><a href="#八-监控与日志">八、监控与日志</a></li>
+<ul>
+<li><a href="#8-1-prometheus-grafana">8.1 Prometheus + Grafana</a></li>
+<li><a href="#8-2-日志收集">8.2 日志收集</a></li>
+</ul>
+<li><a href="#九-安全">九、安全</a></li>
+<ul>
+<li><a href="#9-1-rbac">9.1 RBAC</a></li>
+<li><a href="#9-2-pod-security-standards">9.2 Pod Security Standards</a></li>
+<li><a href="#9-3-镜像安全">9.3 镜像安全</a></li>
+</ul>
+<li><a href="#十-gitops">十、GitOps</a></li>
+<ul>
+<li><a href="#10-1-argocd">10.1 ArgoCD</a></li>
+<li><a href="#10-2-flux">10.2 Flux</a></li>
+</ul>
+<li><a href="#结尾">结尾</a></li>
+</ul>',
+    715,
+    4,
     'published',
     NOW() - INTERVAL '14 days',
     NOW() - INTERVAL '14 days',

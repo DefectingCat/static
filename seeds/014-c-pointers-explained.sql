@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -888,6 +888,58 @@ int main() {
 
 $doc$,
     NULL,
+    '/images/covers/c-pointers-explained.jpg',
+    '<ul>
+<li><a href="#指针的本质">指针的本质</a></li>
+<ul>
+<li><a href="#什么是指针">什么是指针</a></li>
+<li><a href="#指针的大小">指针的大小</a></li>
+</ul>
+<li><a href="#指针与数组">指针与数组</a></li>
+<ul>
+<li><a href="#数组名的本质">数组名的本质</a></li>
+<li><a href="#指针算术">指针算术</a></li>
+</ul>
+<li><a href="#多级指针">多级指针</a></li>
+<ul>
+<li><a href="#指向指针的指针">指向指针的指针</a></li>
+</ul>
+<li><a href="#函数指针">函数指针</a></li>
+<ul>
+<li><a href="#基本语法">基本语法</a></li>
+<li><a href="#回调函数应用">回调函数应用</a></li>
+</ul>
+<li><a href="#void-指针">void 指针</a></li>
+<li><a href="#const-与指针">const 与指针</a></li>
+<li><a href="#内存布局与对齐">内存布局与对齐</a></li>
+<li><a href="#常见指针陷阱">常见指针陷阱</a></li>
+<ul>
+<li><a href="#1-未初始化的指针">1. 未初始化的指针</a></li>
+<li><a href="#2-内存泄漏">2. 内存泄漏</a></li>
+<li><a href="#3-悬空指针">3. 悬空指针</a></li>
+<li><a href="#4-数组越界">4. 数组越界</a></li>
+</ul>
+<li><a href="#总结">总结</a></li>
+<li><a href="#指针与数据结构实现">指针与数据结构实现</a></li>
+<ul>
+<li><a href="#单链表实现">单链表实现</a></li>
+<li><a href="#二叉搜索树实现">二叉搜索树实现</a></li>
+<li><a href="#指针实现的数据结构对比">指针实现的数据结构对比</a></li>
+</ul>
+<li><a href="#指针与内存池技术">指针与内存池技术</a></li>
+<ul>
+<li><a href="#简单内存池实现">简单内存池实现</a></li>
+<li><a href="#内存池优势对比">内存池优势对比</a></li>
+</ul>
+<li><a href="#高级指针技巧">高级指针技巧</a></li>
+<ul>
+<li><a href="#不透明指针-opaque-pointer">不透明指针（Opaque Pointer）</a></li>
+<li><a href="#tagged-union-带标签联合体">tagged union（带标签联合体）</a></li>
+<li><a href="#指针别名与-restrict-关键字">指针别名与 restrict 关键字</a></li>
+</ul>
+</ul>',
+    2005,
+    11,
     'published',
     NOW() - INTERVAL '1 hour',
     NOW() - INTERVAL '1 hour',

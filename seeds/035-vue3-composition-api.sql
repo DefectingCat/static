@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -384,6 +384,46 @@ const emit = defineEmits<{
 Vue 3 的 Composition API 不仅仅是语法变化，它带来了更好的逻辑复用、更清晰的代码组织、更好的 TypeScript 支持。掌握 ref vs reactive 的选择、composables 的设计模式、provide/inject 的正确用法，你的 Vue 3 代码质量会有质的提升。
 $doc$,
     NULL,
+    '/images/covers/vue3-composition-api.jpg',
+    '<ul>
+<li><a href="#前言">前言</a></li>
+<li><a href="#一-响应式系统">一、响应式系统</a></li>
+<ul>
+<li><a href="#1-1-proxy-vs-defineproperty">1.1 Proxy vs defineProperty</a></li>
+<li><a href="#1-2-ref-vs-reactive">1.2 ref vs reactive</a></li>
+<li><a href="#1-3-computed">1.3 computed</a></li>
+<li><a href="#1-4-watch-和-watcheffect">1.4 watch 和 watchEffect</a></li>
+<li><a href="#1-5-toref-和-torefs">1.5 toRef 和 toRefs</a></li>
+</ul>
+<li><a href="#二-生命周期">二、生命周期</a></li>
+<ul>
+<li><a href="#2-1-组合式-api-生命周期">2.1 组合式 API 生命周期</a></li>
+<li><a href="#2-2-生命周期钩子对照">2.2 生命周期钩子对照</a></li>
+</ul>
+<li><a href="#三-composables">三、Composables</a></li>
+<ul>
+<li><a href="#3-1-什么是-composable">3.1 什么是 Composable</a></li>
+<li><a href="#3-2-常用-composable-模式">3.2 常用 Composable 模式</a></li>
+<li><a href="#3-3-composables-vs-mixins">3.3 Composables vs Mixins</a></li>
+</ul>
+<li><a href="#四-provide-inject">四、provide / inject</a></li>
+<ul>
+<li><a href="#4-1-基本用法">4.1 基本用法</a></li>
+<li><a href="#4-2-响应式-provide">4.2 响应式 provide</a></li>
+<li><a href="#4-3-应用全局配置">4.3 应用全局配置</a></li>
+</ul>
+<li><a href="#五-teleport">五、Teleport</a></li>
+<li><a href="#六-suspense">六、Suspense</a></li>
+<li><a href="#七-大型项目架构">七、大型项目架构</a></li>
+<ul>
+<li><a href="#7-1-目录结构">7.1 目录结构</a></li>
+<li><a href="#7-2-组件设计原则">7.2 组件设计原则</a></li>
+</ul>
+<li><a href="#八-与-typescript-的配合">八、与 TypeScript 的配合</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>',
+    731,
+    4,
     'published',
     NOW() - INTERVAL '11 days',
     NOW() - INTERVAL '11 days',

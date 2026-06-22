@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -269,6 +269,70 @@ Docker 默认使用 OverlayFS（overlay2 存储驱动）来实现分层文件系
 建议从搭建一个完整的本地开发环境开始，用 docker-compose 把你常用的数据库、缓存、消息队列都跑起来，写一个简单的 Web 应用部署到上面。
 $doc$,
     NULL,
+    '/images/covers/docker-deep-dive.jpg',
+    '<ul>
+<li><a href="#前言">前言</a></li>
+<li><a href="#一-docker-架构与核心概念">一、Docker 架构与核心概念</a></li>
+<ul>
+<li><a href="#1-1-整体架构">1.1 整体架构</a></li>
+<li><a href="#1-2-镜像-vs-容器">1.2 镜像 vs 容器</a></li>
+<li><a href="#1-3-registry-与仓库">1.3 Registry 与仓库</a></li>
+</ul>
+<li><a href="#二-docker-镜像深入解析">二、Docker 镜像深入解析</a></li>
+<ul>
+<li><a href="#2-1-镜像分层原理">2.1 镜像分层原理</a></li>
+<li><a href="#2-2-构建缓存机制">2.2 构建缓存机制</a></li>
+<li><a href="#2-3-多阶段构建">2.3 多阶段构建</a></li>
+<li><a href="#2-4-镜像优化技巧">2.4 镜像优化技巧</a></li>
+</ul>
+<li><a href="#三-容器网络">三、容器网络</a></li>
+<ul>
+<li><a href="#3-1-网络驱动">3.1 网络驱动</a></li>
+<li><a href="#3-2-容器间通信原理">3.2 容器间通信原理</a></li>
+<li><a href="#3-3-自定义网络配置">3.3 自定义网络配置</a></li>
+</ul>
+<li><a href="#四-数据持久化-volume-与-bind-mount">四、数据持久化：Volume 与 Bind Mount</a></li>
+<ul>
+<li><a href="#4-1-三种存储类型">4.1 三种存储类型</a></li>
+<li><a href="#4-2-volume-vs-bind-mount-对比">4.2 Volume vs Bind Mount 对比</a></li>
+</ul>
+<li><a href="#五-docker-compose">五、Docker Compose</a></li>
+<ul>
+<li><a href="#5-1-基础配置">5.1 基础配置</a></li>
+<li><a href="#5-2-环境变量与-secrets">5.2 环境变量与 Secrets</a></li>
+<li><a href="#5-3-profiles-与选择性启动">5.3 Profiles 与选择性启动</a></li>
+</ul>
+<li><a href="#六-dockerfile-最佳实践">六、Dockerfile 最佳实践</a></li>
+<ul>
+<li><a href="#6-1-指令优化顺序">6.1 指令优化顺序</a></li>
+<li><a href="#6-2-安全相关实践">6.2 安全相关实践</a></li>
+<li><a href="#6-3-健康检查">6.3 健康检查</a></li>
+</ul>
+<li><a href="#七-docker-安全加固">七、Docker 安全加固</a></li>
+<ul>
+<li><a href="#7-1-linux-内核隔离机制">7.1 Linux 内核隔离机制</a></li>
+<li><a href="#7-2-容器逃逸防护">7.2 容器逃逸防护</a></li>
+<li><a href="#7-3-镜像安全扫描">7.3 镜像安全扫描</a></li>
+</ul>
+<li><a href="#八-生产环境部署">八、生产环境部署</a></li>
+<ul>
+<li><a href="#8-1-日志管理">8.1 日志管理</a></li>
+<li><a href="#8-2-资源限制">8.2 资源限制</a></li>
+<li><a href="#8-3-重启策略">8.3 重启策略</a></li>
+<li><a href="#8-4-滚动更新">8.4 滚动更新</a></li>
+</ul>
+<li><a href="#九-docker-底层原理">九、Docker 底层原理</a></li>
+<ul>
+<li><a href="#9-1-namespace-详解">9.1 Namespace 详解</a></li>
+<li><a href="#9-2-cgroups-v2">9.2 Cgroups v2</a></li>
+<li><a href="#9-3-overlayfs">9.3 OverlayFS</a></li>
+</ul>
+<li><a href="#十-实战案例">十、实战案例</a></li>
+<li><a href="#十一-常见问题与排查">十一、常见问题与排查</a></li>
+<li><a href="#结尾">结尾</a></li>
+</ul>',
+    739,
+    4,
     'published',
     NOW() - INTERVAL '15 days',
     NOW() - INTERVAL '15 days',

@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -927,6 +927,76 @@ struct TodoListView: View {
 通过本文的学习，你应该已经掌握了 Swift 的核心语法特性，可以开始构建 iOS、macOS 或其他平台的应用程序了。
 $doc$,
     NULL,
+    '/images/covers/swift-modern-syntax.jpg',
+    '<ul>
+<li><a href="#为什么选择-swift">为什么选择 Swift？</a></li>
+<li><a href="#基础语法">基础语法</a></li>
+<ul>
+<li><a href="#常量与变量">常量与变量</a></li>
+<li><a href="#基本数据类型">基本数据类型</a></li>
+<li><a href="#字符串插值和运算">字符串插值和运算</a></li>
+</ul>
+<li><a href="#可选类型-optionals">可选类型（Optionals）</a></li>
+<ul>
+<li><a href="#什么是可选类型">什么是可选类型</a></li>
+<li><a href="#guard-语句">guard 语句</a></li>
+<li><a href="#if-let-和-guard-let-对比">if let 和 guard let 对比</a></li>
+</ul>
+<li><a href="#集合类型">集合类型</a></li>
+<ul>
+<li><a href="#数组和字典">数组和字典</a></li>
+<li><a href="#set-集合">Set 集合</a></li>
+</ul>
+<li><a href="#控制流">控制流</a></li>
+<ul>
+<li><a href="#高级-switch">高级 switch</a></li>
+<li><a href="#for-in-循环">for-in 循环</a></li>
+</ul>
+<li><a href="#函数和闭包">函数和闭包</a></li>
+<ul>
+<li><a href="#函数定义">函数定义</a></li>
+<li><a href="#闭包-closures">闭包（Closures）</a></li>
+</ul>
+<li><a href="#结构体与类">结构体与类</a></li>
+<ul>
+<li><a href="#值类型-vs-引用类型">值类型 vs 引用类型</a></li>
+<li><a href="#属性观察器">属性观察器</a></li>
+</ul>
+<li><a href="#协议与扩展">协议与扩展</a></li>
+<ul>
+<li><a href="#协议定义">协议定义</a></li>
+<li><a href="#扩展">扩展</a></li>
+</ul>
+<li><a href="#泛型">泛型</a></li>
+<ul>
+<li><a href="#泛型函数和类型">泛型函数和类型</a></li>
+</ul>
+<li><a href="#错误处理">错误处理</a></li>
+<ul>
+<li><a href="#定义和抛出错误">定义和抛出错误</a></li>
+</ul>
+<li><a href="#属性包装器">属性包装器</a></li>
+<li><a href="#总结">总结</a></li>
+<li><a href="#结果类型与错误传播">结果类型与错误传播</a></li>
+<ul>
+<li><a href="#result-类型基础">Result 类型基础</a></li>
+<li><a href="#result-的链式操作">Result 的链式操作</a></li>
+</ul>
+<li><a href="#异步-等待-async-await">异步/等待（Async/Await）</a></li>
+<ul>
+<li><a href="#基本用法">基本用法</a></li>
+<li><a href="#并发执行多个任务">并发执行多个任务</a></li>
+<li><a href="#mainactor-与-ui-更新">MainActor 与 UI 更新</a></li>
+</ul>
+<li><a href="#swiftui-与属性包装器实战">SwiftUI 与属性包装器实战</a></li>
+<ul>
+<li><a href="#核心属性包装器">核心属性包装器</a></li>
+<li><a href="#自定义属性包装器">自定义属性包装器</a></li>
+<li><a href="#状态管理架构对比">状态管理架构对比</a></li>
+</ul>
+</ul>',
+    1913,
+    10,
     'published',
     NOW(),
     NOW(),

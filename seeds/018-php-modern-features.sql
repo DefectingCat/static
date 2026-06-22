@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -674,8 +674,40 @@ PHP 8 确实让这门语言焕然一新。类型系统、枚举、Fiber、JIT—
 
 *本文首发于 Yggdrasil 博客*
     $doc$,
-    NULL,
-    'published',
+        NULL,
+        '/images/covers/php-modern-features.jpg',
+        '<ul>
+<li><a href="#类型系统的进化-从弱类型到强表达">类型系统的进化：从弱类型到强表达</a></li>
+<ul>
+<li><a href="#联合类型-union-types">联合类型（Union Types）</a></li>
+<li><a href="#交集类型-intersection-types">交集类型（Intersection Types）</a></li>
+<li><a href="#枚举-enum">枚举（Enum）</a></li>
+</ul>
+<li><a href="#属性-attributes-原生的注解系统">属性（Attributes）：原生的注解系统</a></li>
+<li><a href="#构造函数提升-告别样板代码">构造函数提升：告别样板代码</a></li>
+<li><a href="#match-表达式-switch-的现代替代">Match 表达式：Switch 的现代替代</a></li>
+<li><a href="#fiber-协程-轻量级并发">Fiber 协程：轻量级并发</a></li>
+<li><a href="#jit-编译器-性能的最后一块拼图">JIT 编译器：性能的最后一块拼图</a></li>
+<li><a href="#命名参数-可读性的提升">命名参数：可读性的提升</a></li>
+<li><a href="#nullsafe-运算符-告别嵌套判断">Nullsafe 运算符：告别嵌套判断</a></li>
+<li><a href="#其他值得关注的特性">其他值得关注的特性</a></li>
+<ul>
+<li><a href="#命名参数与构造函数提升的组合">命名参数与构造函数提升的组合</a></li>
+<li><a href="#字符串包含函数-php-8-0">字符串包含函数（PHP 8.0）</a></li>
+<li><a href="#混合类型-mixed">混合类型（mixed）</a></li>
+<li><a href="#静态返回类型-static">静态返回类型（static）</a></li>
+<li><a href="#新的类常量可见性-php-7-1-但-php-8-普及">新的类常量可见性（PHP 7.1+，但 PHP 8 普及）</a></li>
+<li><a href="#可丢弃的参数-php-8-0">可丢弃的参数（PHP 8.0）</a></li>
+<li><a href="#throw-表达式-php-8-0">throw 表达式（PHP 8.0）</a></li>
+</ul>
+<li><a href="#php-8-性能实测数据">PHP 8 性能实测数据</a></li>
+<li><a href="#命名空间与自动加载的现代实践">命名空间与自动加载的现代实践</a></li>
+<li><a href="#错误处理-从异常到类型">错误处理：从异常到类型</a></li>
+<li><a href="#升级建议">升级建议</a></li>
+</ul>',
+        1571,
+        8,
+        'published',
     NOW() - INTERVAL '16 days',
     NOW() - INTERVAL '16 days',
     NOW() - INTERVAL '16 days'

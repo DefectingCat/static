@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -556,8 +556,21 @@ Lua 的哲学很简单：**用最小的核心提供最大的灵活性**。它不
 
 *本文首发于 Yggdrasil 博客*
     $doc$,
-    NULL,
-    'published',
+        NULL,
+        '/images/covers/lua-embedded-scripting.jpg',
+        '<ul>
+<li><a href="#表-table-万物归一的数据结构">表（Table）：万物归一的数据结构</a></li>
+<li><a href="#元表与元方法-打开-lua-的魔法盒">元表与元方法：打开 Lua 的魔法盒</a></li>
+<li><a href="#协程-轻量级的协作式多任务">协程：轻量级的协作式多任务</a></li>
+<li><a href="#luajit-让-lua-飞起来">LuaJIT：让 Lua 飞起来</a></li>
+<li><a href="#与-c-c-的嵌入艺术">与 C/C++ 的嵌入艺术</a></li>
+<li><a href="#游戏开发-love2d-与更多">游戏开发：Love2D 与更多</a></li>
+<li><a href="#模块系统-简单而有效">模块系统：简单而有效</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>',
+        1752,
+        9,
+        'published',
     NOW() - INTERVAL '24 days',
     NOW() - INTERVAL '24 days',
     NOW() - INTERVAL '24 days'

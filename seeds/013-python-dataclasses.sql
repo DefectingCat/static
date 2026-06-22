@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -572,6 +572,42 @@ print(f"内存节省: {(1 - slot_size/regular_size) * 100:.1f}%")
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
+    '/images/covers/python-dataclasses.jpg',
+    '<ul>
+<li><a href="#dataclass-标准库">dataclass（标准库）</a></li>
+<ul>
+<li><a href="#基础用法">基础用法</a></li>
+<li><a href="#dataclass-参数">dataclass 参数</a></li>
+<li><a href="#field-函数">field() 函数</a></li>
+<li><a href="#frozen-dataclass-不可变数据类">frozen dataclass（不可变数据类）</a></li>
+<li><a href="#继承">继承</a></li>
+</ul>
+<li><a href="#attrs-第三方库">attrs（第三方库）</a></li>
+<ul>
+<li><a href="#attrs-的优势">attrs 的优势</a></li>
+<li><a href="#attrs-验证器示例">attrs 验证器示例</a></li>
+</ul>
+<li><a href="#pydantic-数据验证与序列化">Pydantic：数据验证与序列化</a></li>
+<ul>
+<li><a href="#基础用法">基础用法</a></li>
+<li><a href="#pydantic-配置">Pydantic 配置</a></li>
+</ul>
+<li><a href="#三者对比">三者对比</a></li>
+<li><a href="#如何选择">如何选择？</a></li>
+<li><a href="#总结">总结</a></li>
+<li><a href="#高级数据类特性">高级数据类特性</a></li>
+<ul>
+<li><a href="#使用-__slots__-优化内存">使用 __slots__ 优化内存</a></li>
+<li><a href="#自定义序列化与反序列化">自定义序列化与反序列化</a></li>
+<li><a href="#数据类与描述符结合">数据类与描述符结合</a></li>
+</ul>
+<li><a href="#数据类性能对比与选择指南">数据类性能对比与选择指南</a></li>
+<ul>
+<li><a href="#性能测试示例">性能测试示例</a></li>
+</ul>
+</ul>',
+    1747,
+    9,
     'published',
     NOW() - INTERVAL '5 days',
     NOW() - INTERVAL '5 days',

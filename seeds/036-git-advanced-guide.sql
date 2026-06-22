@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -309,6 +309,55 @@ npx husky add .husky/pre-commit "npm run lint"
 理解 Git 的内部原理（对象模型、引用、暂存区）能让你更自信地使用高级操作。interactive rebase、cherry-pick、bisect 这些工具在日常开发中非常实用。选一个适合你团队的分支策略，配合 Git Hooks 保证代码质量。
 $doc$,
     NULL,
+    '/images/covers/git-advanced-guide.jpg',
+    '<ul>
+<li><a href="#前言">前言</a></li>
+<li><a href="#一-git-对象模型">一、Git 对象模型</a></li>
+<ul>
+<li><a href="#1-1-三种对象">1.1 三种对象</a></li>
+<li><a href="#1-2-sha-1-哈希">1.2 SHA-1 哈希</a></li>
+<li><a href="#1-3-引用-refs">1.3 引用（Refs）</a></li>
+</ul>
+<li><a href="#二-git-工作流">二、Git 工作流</a></li>
+<ul>
+<li><a href="#2-1-暂存区">2.1 暂存区</a></li>
+<li><a href="#2-2-head-指针">2.2 HEAD 指针</a></li>
+</ul>
+<li><a href="#三-分支策略">三、分支策略</a></li>
+<ul>
+<li><a href="#3-1-git-flow">3.1 Git Flow</a></li>
+<li><a href="#3-2-github-flow">3.2 GitHub Flow</a></li>
+<li><a href="#3-3-trunk-based-development">3.3 Trunk-Based Development</a></li>
+</ul>
+<li><a href="#四-高级操作">四、高级操作</a></li>
+<ul>
+<li><a href="#4-1-interactive-rebase">4.1 Interactive Rebase</a></li>
+<li><a href="#4-2-cherry-pick">4.2 Cherry-Pick</a></li>
+<li><a href="#4-3-bisect">4.3 Bisect</a></li>
+<li><a href="#4-4-reflog">4.4 Reflog</a></li>
+</ul>
+<li><a href="#五-远程协作">五、远程协作</a></li>
+<ul>
+<li><a href="#5-1-fetch-vs-pull">5.1 Fetch vs Pull</a></li>
+<li><a href="#5-2-push-options">5.2 Push Options</a></li>
+<li><a href="#5-3-git-lfs">5.3 Git LFS</a></li>
+</ul>
+<li><a href="#六-配置与别名">六、配置与别名</a></li>
+<ul>
+<li><a href="#6-1-实用别名">6.1 实用别名</a></li>
+<li><a href="#6-2-gitattributes">6.2 .gitattributes</a></li>
+</ul>
+<li><a href="#七-常见问题解决">七、常见问题解决</a></li>
+<ul>
+<li><a href="#7-1-撤销操作">7.1 撤销操作</a></li>
+<li><a href="#7-2-冲突解决">7.2 冲突解决</a></li>
+<li><a href="#7-3-清理">7.3 清理</a></li>
+</ul>
+<li><a href="#八-git-hooks">八、Git Hooks</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>',
+    619,
+    4,
     'published',
     NOW() - INTERVAL '10 days',
     NOW() - INTERVAL '10 days',

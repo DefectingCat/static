@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -373,6 +373,61 @@ LIMIT 20;
 PostgreSQL 是一个功能极其丰富的数据库。掌握这些高级特性能让你在面对复杂需求时游刃有余。但记住，最好的优化是选择合适的架构——不要用数据库做它不擅长的事情。
 $doc$,
     NULL,
+    '/images/covers/postgresql-advanced.jpg',
+    '<ul>
+<li><a href="#前言">前言</a></li>
+<li><a href="#一-索引深入理解">一、索引深入理解</a></li>
+<ul>
+<li><a href="#1-1-b-tree-索引">1.1 B-Tree 索引</a></li>
+<li><a href="#1-2-gin-索引">1.2 GIN 索引</a></li>
+<li><a href="#1-3-gist-索引">1.3 GiST 索引</a></li>
+<li><a href="#1-4-brin-索引">1.4 BRIN 索引</a></li>
+</ul>
+<li><a href="#二-查询优化">二、查询优化</a></li>
+<ul>
+<li><a href="#2-1-explain-analyze">2.1 EXPLAIN ANALYZE</a></li>
+<li><a href="#2-2-统计信息">2.2 统计信息</a></li>
+<li><a href="#2-3-查询调优参数">2.3 查询调优参数</a></li>
+</ul>
+<li><a href="#三-高级-sql-特性">三、高级 SQL 特性</a></li>
+<ul>
+<li><a href="#3-1-窗口函数">3.1 窗口函数</a></li>
+<li><a href="#3-2-cte-common-table-expression">3.2 CTE（Common Table Expression）</a></li>
+<li><a href="#3-3-lateral-join">3.3 LATERAL JOIN</a></li>
+<li><a href="#3-4-upsert">3.4 UPSERT</a></li>
+</ul>
+<li><a href="#四-jsonb-操作">四、JSONB 操作</a></li>
+<ul>
+<li><a href="#4-1-jsonb-存储与查询">4.1 JSONB 存储与查询</a></li>
+<li><a href="#4-2-jsonb-索引">4.2 JSONB 索引</a></li>
+<li><a href="#4-3-jsonb-聚合">4.3 JSONB 聚合</a></li>
+</ul>
+<li><a href="#五-全文搜索">五、全文搜索</a></li>
+<ul>
+<li><a href="#5-1-基本用法">5.1 基本用法</a></li>
+<li><a href="#5-2-中文全文搜索">5.2 中文全文搜索</a></li>
+</ul>
+<li><a href="#六-分区表">六、分区表</a></li>
+<ul>
+<li><a href="#6-1-声明式分区">6.1 声明式分区</a></li>
+<li><a href="#6-2-分区裁剪">6.2 分区裁剪</a></li>
+</ul>
+<li><a href="#七-复制与高可用">七、复制与高可用</a></li>
+<ul>
+<li><a href="#7-1-流复制">7.1 流复制</a></li>
+<li><a href="#7-2-逻辑复制">7.2 逻辑复制</a></li>
+<li><a href="#7-3-patroni-高可用">7.3 Patroni 高可用</a></li>
+</ul>
+<li><a href="#八-扩展">八、扩展</a></li>
+<ul>
+<li><a href="#8-1-常用扩展">8.1 常用扩展</a></li>
+<li><a href="#8-2-pg_stat_statements">8.2 pg_stat_statements</a></li>
+</ul>
+<li><a href="#九-性能优化清单">九、性能优化清单</a></li>
+<li><a href="#结尾">结尾</a></li>
+</ul>',
+    911,
+    5,
     'published',
     NOW() - INTERVAL '12 days',
     NOW() - INTERVAL '12 days',

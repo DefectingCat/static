@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -295,6 +295,62 @@ groups:
 CI/CD 不是一次性搭建完成的，它需要根据团队的实际情况持续调整。从最简单的流水线开始，逐步添加质量门禁、安全扫描、自动化部署。记住，工具是手段，目标是更快、更可靠地交付价值。
 $doc$,
     NULL,
+    '/images/covers/cicd-devops-guide.jpg',
+    '<ul>
+<li><a href="#前言">前言</a></li>
+<li><a href="#一-持续集成-ci">一、持续集成（CI）</a></li>
+<ul>
+<li><a href="#1-1-什么是持续集成">1.1 什么是持续集成</a></li>
+<li><a href="#1-2-ci-流水线设计">1.2 CI 流水线设计</a></li>
+<li><a href="#1-3-质量门禁">1.3 质量门禁</a></li>
+</ul>
+<li><a href="#二-持续部署-cd">二、持续部署（CD）</a></li>
+<ul>
+<li><a href="#2-1-部署策略">2.1 部署策略</a></li>
+<li><a href="#2-2-环境管理">2.2 环境管理</a></li>
+<li><a href="#2-3-回滚策略">2.3 回滚策略</a></li>
+</ul>
+<li><a href="#三-ci-cd-工具">三、CI/CD 工具</a></li>
+<ul>
+<li><a href="#3-1-github-actions">3.1 GitHub Actions</a></li>
+<li><a href="#3-2-gitlab-ci">3.2 GitLab CI</a></li>
+<li><a href="#3-3-jenkins">3.3 Jenkins</a></li>
+</ul>
+<li><a href="#四-gitops">四、GitOps</a></li>
+<ul>
+<li><a href="#4-1-gitops-原则">4.1 GitOps 原则</a></li>
+<li><a href="#4-2-argocd">4.2 ArgoCD</a></li>
+<li><a href="#4-3-flux">4.3 Flux</a></li>
+</ul>
+<li><a href="#五-基础设施即代码-iac">五、基础设施即代码（IaC）</a></li>
+<ul>
+<li><a href="#5-1-terraform">5.1 Terraform</a></li>
+<li><a href="#5-2-ansible">5.2 Ansible</a></li>
+</ul>
+<li><a href="#六-容器化与-kubernetes">六、容器化与 Kubernetes</a></li>
+<ul>
+<li><a href="#6-1-docker-构建优化">6.1 Docker 构建优化</a></li>
+<li><a href="#6-2-kubernetes-部署">6.2 Kubernetes 部署</a></li>
+</ul>
+<li><a href="#七-监控与可观测性">七、监控与可观测性</a></li>
+<ul>
+<li><a href="#7-1-三大支柱">7.1 三大支柱</a></li>
+<li><a href="#7-2-告警">7.2 告警</a></li>
+</ul>
+<li><a href="#八-安全">八、安全</a></li>
+<ul>
+<li><a href="#8-1-devsecops">8.1 DevSecOps</a></li>
+<li><a href="#8-2-secrets-管理">8.2 Secrets 管理</a></li>
+</ul>
+<li><a href="#九-度量与改进">九、度量与改进</a></li>
+<ul>
+<li><a href="#9-1-dora-指标">9.1 DORA 指标</a></li>
+<li><a href="#9-2-持续改进">9.2 持续改进</a></li>
+</ul>
+<li><a href="#总结">总结</a></li>
+</ul>',
+    505,
+    3,
     'published',
     NOW() - INTERVAL '6 days',
     NOW() - INTERVAL '6 days',

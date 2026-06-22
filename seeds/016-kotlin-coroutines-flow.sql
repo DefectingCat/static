@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -785,6 +785,59 @@ suspend fun fetchWithFallback() = supervisorScope {
 通过本文的学习，你应该能够在实际项目中熟练使用协程进行网络请求、数据库操作、UI 更新等异步任务，并使用 Flow 构建响应式的数据流。
 $doc$,
     NULL,
+    '/images/covers/kotlin-coroutines-flow.jpg',
+    '<ul>
+<li><a href="#为什么选择协程">为什么选择协程？</a></li>
+<li><a href="#协程基础">协程基础</a></li>
+<ul>
+<li><a href="#启动协程">启动协程</a></li>
+<li><a href="#挂起函数">挂起函数</a></li>
+<li><a href="#coroutinescope-和上下文">CoroutineScope 和上下文</a></li>
+</ul>
+<li><a href="#结构化并发">结构化并发</a></li>
+<ul>
+<li><a href="#父子关系">父子关系</a></li>
+<li><a href="#supervisorjob">SupervisorJob</a></li>
+</ul>
+<li><a href="#flow-响应式流">Flow：响应式流</a></li>
+<ul>
+<li><a href="#冷流-cold-flow">冷流（Cold Flow）</a></li>
+<li><a href="#操作符">操作符</a></li>
+<li><a href="#stateflow-和-sharedflow">StateFlow 和 SharedFlow</a></li>
+</ul>
+<li><a href="#异常处理">异常处理</a></li>
+<ul>
+<li><a href="#try-catch-在协程中">try-catch 在协程中</a></li>
+<li><a href="#coroutineexceptionhandler">CoroutineExceptionHandler</a></li>
+<li><a href="#flow-异常处理">Flow 异常处理</a></li>
+</ul>
+<li><a href="#与-rxjava-对比">与 RxJava 对比</a></li>
+<ul>
+<li><a href="#从-rxjava-迁移示例">从 RxJava 迁移示例</a></li>
+</ul>
+<li><a href="#实际应用-mvvm-架构">实际应用：MVVM 架构</a></li>
+<li><a href="#总结">总结</a></li>
+<li><a href="#channel-协程间的通信桥梁">Channel：协程间的通信桥梁</a></li>
+<ul>
+<li><a href="#channel-基础">Channel 基础</a></li>
+<li><a href="#带缓冲的-channel">带缓冲的 Channel</a></li>
+<li><a href="#channel-与-flow-的对比">Channel 与 Flow 的对比</a></li>
+</ul>
+<li><a href="#协程测试">协程测试</a></li>
+<ul>
+<li><a href="#基本测试">基本测试</a></li>
+<li><a href="#flow-测试">Flow 测试</a></li>
+</ul>
+<li><a href="#性能优化与最佳实践">性能优化与最佳实践</a></li>
+<ul>
+<li><a href="#1-避免在协程中阻塞线程">1. 避免在协程中阻塞线程</a></li>
+<li><a href="#2-合理选择-dispatcher">2. 合理选择 Dispatcher</a></li>
+<li><a href="#3-内存泄漏防护">3. 内存泄漏防护</a></li>
+<li><a href="#4-结构化并发实践">4. 结构化并发实践</a></li>
+</ul>
+</ul>',
+    1461,
+    8,
     'published',
     NOW() - INTERVAL '15 minutes',
     NOW() - INTERVAL '15 minutes',

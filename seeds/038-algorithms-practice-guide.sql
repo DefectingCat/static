@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -237,6 +237,51 @@ def reverseList(head):
 算法学习是一个持续的过程。不需要背诵所有算法的模板，但要理解每种算法的核心思想和适用场景。遇到问题时，先分析时间复杂度需求，再选择合适的算法。
 $doc$,
     NULL,
+    '/images/covers/algorithms-practice-guide.jpg',
+    '<ul>
+<li><a href="#前言">前言</a></li>
+<li><a href="#一-排序算法">一、排序算法</a></li>
+<ul>
+<li><a href="#1-1-快速排序">1.1 快速排序</a></li>
+<li><a href="#1-2-归并排序">1.2 归并排序</a></li>
+<li><a href="#1-3-堆排序">1.3 堆排序</a></li>
+<li><a href="#1-4-排序算法对比">1.4 排序算法对比</a></li>
+</ul>
+<li><a href="#二-查找算法">二、查找算法</a></li>
+<ul>
+<li><a href="#2-1-二分查找">2.1 二分查找</a></li>
+<li><a href="#2-2-哈希表">2.2 哈希表</a></li>
+</ul>
+<li><a href="#三-数据结构">三、数据结构</a></li>
+<ul>
+<li><a href="#3-1-栈">3.1 栈</a></li>
+<li><a href="#3-2-队列">3.2 队列</a></li>
+<li><a href="#3-3-链表">3.3 链表</a></li>
+<li><a href="#3-4-树">3.4 树</a></li>
+<li><a href="#3-5-图">3.5 图</a></li>
+</ul>
+<li><a href="#四-经典算法">四、经典算法</a></li>
+<ul>
+<li><a href="#4-1-动态规划">4.1 动态规划</a></li>
+<li><a href="#4-2-贪心算法">4.2 贪心算法</a></li>
+<li><a href="#4-3-回溯">4.3 回溯</a></li>
+<li><a href="#4-4-分治">4.4 分治</a></li>
+</ul>
+<li><a href="#五-复杂度分析">五、复杂度分析</a></li>
+<ul>
+<li><a href="#5-1-时间复杂度">5.1 时间复杂度</a></li>
+<li><a href="#5-2-空间复杂度">5.2 空间复杂度</a></li>
+</ul>
+<li><a href="#六-leetcode-经典题">六、LeetCode 经典题</a></li>
+<ul>
+<li><a href="#6-1-两数之和-hashmap">6.1 两数之和（HashMap）</a></li>
+<li><a href="#6-2-最大子数组和-动态规划">6.2 最大子数组和（动态规划）</a></li>
+<li><a href="#6-3-反转链表-迭代">6.3 反转链表（迭代）</a></li>
+</ul>
+<li><a href="#总结">总结</a></li>
+</ul>',
+    513,
+    3,
     'published',
     NOW() - INTERVAL '9 days',
     NOW() - INTERVAL '9 days',

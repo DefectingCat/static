@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -75,6 +75,26 @@ Docker 使用非 root 用户、依赖安全扫描（npm audit、Snyk）、SAST�
 安全不是一次性的任务，而是持续的过程。把安全测试加入 CI/CD，定期更新依赖，对开发团队做安全培训，建立漏洞响应流程。
 $doc$,
     NULL,
+    '/images/covers/web-security-guide.jpg',
+    '<ul>
+<li><a href="#owasp-top-10-概览">OWASP Top 10 概览</a></li>
+<li><a href="#xss-跨站脚本攻击">XSS：跨站脚本攻击</a></li>
+<li><a href="#sql-注入">SQL 注入</a></li>
+<li><a href="#csrf-跨站请求伪造">CSRF：跨站请求伪造</a></li>
+<li><a href="#认证与鉴权">认证与鉴权</a></li>
+<li><a href="#https-与-tls">HTTPS 与 TLS</a></li>
+<li><a href="#cors">CORS</a></li>
+<li><a href="#csp">CSP</a></li>
+<li><a href="#速率限制">速率限制</a></li>
+<li><a href="#输入验证">输入验证</a></li>
+<li><a href="#安全响应头">安全响应头</a></li>
+<li><a href="#api-安全">API 安全</a></li>
+<li><a href="#容器与部署安全">容器与部署安全</a></li>
+<li><a href="#安全日志与监控">安全日志与监控</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>',
+    260,
+    2,
     'published',
     NOW() - INTERVAL '3 days',
     NOW() - INTERVAL '3 days',

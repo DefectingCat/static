@@ -1,4 +1,4 @@
-INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, status, published_at, created_at, updated_at)
+INSERT INTO posts (author_id, title, slug, summary, content_md, content_html, cover_image, toc_html, word_count, reading_time, status, published_at, created_at, updated_at)
 VALUES
 (
     1,
@@ -354,6 +354,67 @@ gRPC 服务的单元测试可以用 bufconn 建立内存连接，不需要启动
 gRPC 在微服务通信中比 REST 更高效、更可靠。Protocol Buffers 的强类型保证了接口契约，HTTP/2 提供了高效的传输，流式 RPC 支持了实时场景。但 gRPC 不是万能的——浏览器支持有限、调试不如 REST 直观、学习曲线较陡。选择 REST 还是 gRPC，取决于你的具体场景。
 $doc$,
     NULL,
+    '/images/covers/grpc-microservices-guide.jpg',
+    '<ul>
+<li><a href="#前言">前言</a></li>
+<li><a href="#一-protocol-buffers">一、Protocol Buffers</a></li>
+<ul>
+<li><a href="#1-1-基本语法">1.1 基本语法</a></li>
+<li><a href="#1-2-字段编号">1.2 字段编号</a></li>
+<li><a href="#1-3-枚举和-oneof">1.3 枚举和 Oneof</a></li>
+</ul>
+<li><a href="#二-grpc-四种通信模式">二、gRPC 四种通信模式</a></li>
+<ul>
+<li><a href="#2-1-一元-rpc-unary">2.1 一元 RPC（Unary）</a></li>
+<li><a href="#2-2-服务端流式-rpc">2.2 服务端流式 RPC</a></li>
+<li><a href="#2-3-客户端流式-rpc">2.3 客户端流式 RPC</a></li>
+<li><a href="#2-4-双向流式-rpc">2.4 双向流式 RPC</a></li>
+</ul>
+<li><a href="#三-go-实现-grpc-服务">三、Go 实现 gRPC 服务</a></li>
+<ul>
+<li><a href="#3-1-定义-proto-文件">3.1 定义 proto 文件</a></li>
+<li><a href="#3-2-生成代码">3.2 生成代码</a></li>
+<li><a href="#3-3-实现服务">3.3 实现服务</a></li>
+</ul>
+<li><a href="#四-java-实现-grpc-服务">四、Java 实现 gRPC 服务</a></li>
+<li><a href="#五-负载均衡">五、负载均衡</a></li>
+<ul>
+<li><a href="#5-1-客户端负载均衡">5.1 客户端负载均衡</a></li>
+<li><a href="#5-2-服务端负载均衡">5.2 服务端负载均衡</a></li>
+</ul>
+<li><a href="#六-拦截器-interceptors">六、拦截器（Interceptors）</a></li>
+<ul>
+<li><a href="#6-1-一元拦截器">6.1 一元拦截器</a></li>
+<li><a href="#6-2-链式拦截器">6.2 链式拦截器</a></li>
+</ul>
+<li><a href="#七-错误处理">七、错误处理</a></li>
+<li><a href="#八-认证">八、认证</a></li>
+<ul>
+<li><a href="#8-1-token-认证">8.1 Token 认证</a></li>
+<li><a href="#8-2-tls">8.2 TLS</a></li>
+</ul>
+<li><a href="#九-健康检查">九、健康检查</a></li>
+<li><a href="#十-grpc-web">十、gRPC-Web</a></li>
+<li><a href="#十一-与-rest-共存">十一、与 REST 共存</a></li>
+<ul>
+<li><a href="#11-1-grpc-gateway">11.1 gRPC-Gateway</a></li>
+<li><a href="#11-2-同时暴露两种协议">11.2 同时暴露两种协议</a></li>
+</ul>
+<li><a href="#十二-性能优化">十二、性能优化</a></li>
+<ul>
+<li><a href="#12-1-连接管理">12.1 连接管理</a></li>
+<li><a href="#12-2-消息大小">12.2 消息大小</a></li>
+<li><a href="#12-3-超时和截止时间">12.3 超时和截止时间</a></li>
+</ul>
+<li><a href="#十三-测试">十三、测试</a></li>
+<ul>
+<li><a href="#13-1-单元测试">13.1 单元测试</a></li>
+<li><a href="#13-2-集成测试">13.2 集成测试</a></li>
+</ul>
+<li><a href="#总结">总结</a></li>
+</ul>',
+    620,
+    4,
     'published',
     NOW() - INTERVAL '7 days',
     NOW() - INTERVAL '7 days',

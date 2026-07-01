@@ -1032,12 +1032,39 @@ func (node *CacheNode) Close() {
 	}
 }
 
-// 实现 gRPC Get 服务接口
+// 实现 gRPC Get 服务接口，如果未命中本地缓存，则由该负责该 Key 的节点负责执行 Fetch 数据操作
 func (node *CacheNode) Get(ctx context.Context, req *GetRequest) (*GetResponse, error) {
+	// 如果本地缓存命中，直接返回
 	val, found := node.localCache.Get(req.Key)
 	if found {
 		return &GetResponse{Value: val, Found: true}, nil
 	}
+
+	// 如果本地缓存未命中，且当前节点确实是该 Key 应该路由到的目标节点
+	targetNode := node.ring.GetNode(req.Key)
+	if targetNode == node.selfAddr {
+		// 使用该负责节点的 singleflight 从本地底座数据库加载数据
+		res, err := node.sfGroup.Do(ctx, req.Key, func(bCtx context.Context) (interface{}, error) {
+			// 二次检查本地缓存
+			if val, found := node.localCache.Get(req.Key); found {
+				return val, nil
+			}
+			log.Printf("[%s] cache miss for key %s on responsible node, fetching from local DB", node.selfAddr, req.Key)
+			val, err := node.dbFetcher(req.Key)
+			if err != nil {
+				return nil, err
+			}
+			// 写入本地缓存，设置默认 TTL
+			node.localCache.Set(req.Key, val, 1*time.Minute)
+			return val, nil
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &GetResponse{Value: res.([]byte), Found: true}, nil
+	}
+
+	// 如果该节点不负有对该 Key 的直接加载权（如中途哈希环变动路由不合规），返回未命中
 	return &GetResponse{Found: false}, nil
 }
 
@@ -1088,29 +1115,19 @@ func (node *CacheNode) GetOrFetch(ctx context.Context, key string, ttl time.Dura
 			return nil, fmt.Errorf("grpc error from peer %s: %w", targetNode, err)
 		}
 
-		// 远程命中返回数据
+		// 远程命中（或远程节点已从数据库加载）返回数据
 		if resp.Found {
+			// 同时在本地保留一份短暂的 L1 缓存（10秒），防止突发大量跨节点访问消耗带宽
+			node.localCache.Set(key, resp.Value, 10*time.Second)
 			return resp.Value, nil
 		}
 
-		// 远程也未命中，在此处作为代理进行 DB 查询，并将结果写回指定的目标节点
-		log.Printf("[%s] key %s not found on remote node %s, fetching from DB locally and writing back", node.selfAddr, key, targetNode)
+		// 如果远程节点由于某些哈希环极端变动未能加载数据，本地进行备用兜底查询
+		log.Printf("[%s] remote node %s returned not found for key %s, falling back to local DB fetch", node.selfAddr, targetNode, key)
 		val, err := node.dbFetcher(key)
 		if err != nil {
 			return nil, err
 		}
-
-		// 异步回写远程目标节点
-		go func() {
-			_, _ = client.Set(context.Background(), &SetRequest{
-				Key:   key,
-				Value: val,
-				TTL:   int64(ttl.Seconds()),
-			})
-		}()
-
-		// 同时在本地保留一份短暂的 L1 缓存（10秒），防止突发大量跨节点访问消耗带宽
-		node.localCache.Set(key, val, 10*time.Second)
 		return val, nil
 	})
 

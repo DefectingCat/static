@@ -811,8 +811,6 @@ impl Scheduler {
 
     // 当 Waker 触发唤醒时，调度任务重新入队
     pub fn enqueue_task(&self, task: Arc<Task>) {
-        // 重置排队状态，允许下一次就绪时再次注册唤醒
-        task.is_queued.store(false, Ordering::SeqCst);
         let worker_id = task.origin_worker_id;
 
         // 重新推回到该任务的源属 Worker 本地队列中
@@ -941,24 +939,30 @@ impl Worker {
 
     // 执行任务的 poll 驱动
     fn execute_task(&self, task: Arc<Task>) {
-        let mut future_guard = task.future.lock().unwrap();
-        if let Some(mut future) = future_guard.take() {
-            // 构造上下文
-            let waker = create_waker(&task);
-            let mut context = Context::from_waker(&waker);
+        if let Ok(mut future_guard) = task.future.try_lock() {
+            // Reset queue state here so a new wake signal during or after poll will enqueue it again
+            task.is_queued.store(false, Ordering::SeqCst);
+            
+            if let Some(mut future) = future_guard.take() {
+                // 构造上下文
+                let waker = create_waker(&task);
+                let mut context = Context::from_waker(&waker);
 
-            // 执行核心 poll 动作
-            match future.as_mut().poll(&mut context) {
-                Poll::Ready(()) => {
-                    // 任务执行完毕，递减活跃任务计数
-                    self.scheduler.active_tasks.fetch_sub(1, Ordering::SeqCst);
-                    println!("[Worker {}] Task executed successfully.", self.id);
-                }
-                Poll::Pending => {
-                    // 未完成，重新写回任务控制块，等待 Reactor 触发 Waker
-                    *future_guard = Some(future);
+                // 执行核心 poll 动作
+                match future.as_mut().poll(&mut context) {
+                    Poll::Ready(()) => {
+                        // 任务执行完毕，递减活跃任务计数
+                        self.scheduler.active_tasks.fetch_sub(1, Ordering::SeqCst);
+                        println!("[Worker {}] Task executed successfully.", self.id);
+                    }
+                    Poll::Pending => {
+                        // 未完成，重新写回任务控制块，等待 Reactor 触发 Waker
+                        *future_guard = Some(future);
+                    }
                 }
             }
+        } else {
+            println!("[Worker {}] Task is already being executed by another worker, skipping.", self.id);
         }
     }
 }

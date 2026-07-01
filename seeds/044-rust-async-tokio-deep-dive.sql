@@ -139,9 +139,9 @@ struct Task {
 }
 
 impl Wake for Task {
-    fn wake(self: &Arc<Self>) {
+    fn wake(self: Arc<Self>) {
         let mut queue = self.task_queue.lock().unwrap();
-        queue.push_back(self.clone());
+        queue.push_back(self);
     }
 }
 

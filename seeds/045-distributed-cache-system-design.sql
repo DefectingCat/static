@@ -53,7 +53,7 @@ VALUES
 
 ```go
 // 使用 Golang singleflight 模式的伪代码
-import "golang.org/x/sync/singleflight"
+import sf "golang.org/x/sync/singleflight"
 
 var g sf.Group
 
@@ -131,7 +131,7 @@ func (item *cacheItem) isExpired() bool {
 }
 
 type LRUCache struct {
-	mu         sync.RWMutex
+	mu         sync.Mutex
 	capacity   int
 	items      map[string]*list.Element
 	evictList  *list.List

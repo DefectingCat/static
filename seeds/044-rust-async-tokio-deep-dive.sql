@@ -733,8 +733,6 @@ impl LocalQueue {
 
     // 工作窃取算法的核心：从目标队列中窃取大约一半的任务
     fn steal_half_from(&self, target: &LocalQueue) -> Option<Arc<Task>> {
-        // 先锁定目标队列，防止死锁：在我们的调度设计中，窃取线程只在自身队列为空时才会锁定对方队列，
-        // 且不会同时锁定两个外部队列，因此不会引发死锁。
         let mut target_lock = target.tasks.lock().unwrap();
         let size = target_lock.len();
         if size == 0 {
@@ -743,16 +741,21 @@ impl LocalQueue {
 
         // 计算需要窃取的数量 (向上取整)
         let steal_count = (size + 1) / 2;
-        let mut my_lock = self.tasks.lock().unwrap();
-
-        // 弹出一个作为当前立即执行的任务返回
         let immediate_task = target_lock.pop_back();
-        
-        // 将剩余需要窃取的任务转移至自己的队列
+
+        // 收集要转移的任务，然后尽早释放目标队列的锁以避免潜在死锁
+        let mut stolen_tasks = Vec::new();
         for _ in 0..(steal_count - 1) {
             if let Some(t) = target_lock.pop_back() {
-                my_lock.push_back(t);
+                stolen_tasks.push(t);
             }
+        }
+        drop(target_lock);
+
+        // 现在锁定自己的队列并将任务放入
+        let mut my_lock = self.tasks.lock().unwrap();
+        for t in stolen_tasks {
+            my_lock.push_back(t);
         }
 
         println!(

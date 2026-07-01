@@ -785,7 +785,7 @@ suspend fun fetchWithFallback() = supervisorScope {
 通过本文的学习，你应该能够在实际项目中熟练使用协程进行网络请求、数据库操作、UI 更新等异步任务，并使用 Flow 构建响应式的数据流。
 $doc$,
     NULL,
-    '/images/covers/kotlin-coroutines-flow.jpg',
+    NULL,
     '<ul>
 <li><a href="#为什么选择协程">为什么选择协程？</a></li>
 <li><a href="#协程基础">协程基础</a></li>

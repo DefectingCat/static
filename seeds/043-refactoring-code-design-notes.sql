@@ -588,7 +588,7 @@ def save(data):
 如果你只记住一件事，我希望是这句：好的代码不是设计出来的，是改出来的。
 $doc$,
     NULL,
-    '/images/covers/refactoring-code-design-notes.jpg',
+    NULL,
     '<ul>
 <li><a href="#什么样的代码需要重构">什么样的代码需要重构</a></li>
 <ul>

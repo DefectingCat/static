@@ -373,7 +373,7 @@ LIMIT 20;
 PostgreSQL 是一个功能极其丰富的数据库。掌握这些高级特性能让你在面对复杂需求时游刃有余。但记住，最好的优化是选择合适的架构——不要用数据库做它不擅长的事情。
 $doc$,
     NULL,
-    '/images/covers/postgresql-advanced.jpg',
+    NULL,
     '<ul>
 <li><a href="#前言">前言</a></li>
 <li><a href="#一-索引深入理解">一、索引深入理解</a></li>

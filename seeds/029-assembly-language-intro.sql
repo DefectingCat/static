@@ -627,7 +627,7 @@ Assembly 不是要你天天写的语言，但它是理解计算机如何工作�
 *本文首发于 Yggdrasil 博客*
     $doc$,
         NULL,
-        '/images/covers/assembly-language-intro.jpg',
+        NULL,
         '<ul>
 <li><a href="#x86-64-架构概览">x86-64 架构概览</a></li>
 <ul>

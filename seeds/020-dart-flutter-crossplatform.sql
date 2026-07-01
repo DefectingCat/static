@@ -990,7 +990,7 @@ Flutter 不是银弹。如果你的应用重度依赖平台特定功能（比如
 *本文首发于 Yggdrasil 博客*
     $doc$,
         NULL,
-        '/images/covers/dart-flutter-crossplatform.jpg',
+        NULL,
         '<ul>
 <li><a href="#dart-语言核心特性">Dart 语言核心特性</a></li>
 <ul>

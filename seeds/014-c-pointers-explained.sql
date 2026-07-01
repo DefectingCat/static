@@ -888,7 +888,7 @@ int main() {
 
 $doc$,
     NULL,
-    '/images/covers/c-pointers-explained.jpg',
+    NULL,
     '<ul>
 <li><a href="#指针的本质">指针的本质</a></li>
 <ul>

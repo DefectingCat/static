@@ -326,7 +326,7 @@ Flux 是另一个流行的 GitOps 工具，由 Weaveworks 开发。它的架构�
 Kubernetes 的学习曲线很陡，但一旦你的集群稳定运行起来，它带来的效率提升是显著的。从一个小集群开始，先把无状态服务迁移上去，积累经验后再处理有状态服务。不要试图一步到位——K8s 生态太庞大了，一步一步来。
 $doc$,
     NULL,
-    '/images/covers/kubernetes-guide.jpg',
+    NULL,
     '<ul>
 <li><a href="#前言">前言</a></li>
 <li><a href="#一-核心架构">一、核心架构</a></li>

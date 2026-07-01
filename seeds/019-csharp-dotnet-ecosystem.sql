@@ -816,7 +816,7 @@ gRPC 基于 HTTP/2，支持流式传输、头部压缩、多路复用。在微�
 *本文首发于 Yggdrasil 博客*
     $doc$,
         NULL,
-        '/images/covers/csharp-dotnet-ecosystem.jpg',
+        NULL,
         '<ul>
 <li><a href="#linq-革命性的数据查询">LINQ：革命性的数据查询</a></li>
 <li><a href="#async-await-异步编程的黄金标准">Async/Await：异步编程的黄金标准</a></li>

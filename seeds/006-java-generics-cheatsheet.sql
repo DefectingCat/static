@@ -683,7 +683,7 @@ class User {
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
-    '/images/covers/java-generics-cheatsheet.jpg',
+    NULL,
     '<ul>
 <li><a href="#泛型的基础概念">泛型的基础概念</a></li>
 <ul>

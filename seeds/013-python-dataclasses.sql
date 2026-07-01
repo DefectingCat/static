@@ -572,7 +572,7 @@ print(f"内存节省: {(1 - slot_size/regular_size) * 100:.1f}%")
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
-    '/images/covers/python-dataclasses.jpg',
+    NULL,
     '<ul>
 <li><a href="#dataclass-标准库">dataclass（标准库）</a></li>
 <ul>

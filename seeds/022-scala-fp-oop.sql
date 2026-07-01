@@ -449,7 +449,7 @@ Scala 不适合所有人。如果你的团队以 Java 背景为主，强行切 S
 *本文首发于 Yggdrasil 博客*
      $doc$,
          NULL,
-         '/images/covers/scala-fp-oop.jpg',
+         NULL,
          '<ul>
 <li><a href="#case-class-不可变数据的优雅表达">case class：不可变数据的优雅表达</a></li>
 <li><a href="#模式匹配-不只是-switch-的高级版">模式匹配：不只是 switch 的高级版</a></li>

@@ -568,7 +568,7 @@ GFM 支持使用 HTML `<details>` 标签创建可折叠内容：
 *本文用于测试 Markdown 渲染引擎的兼容性。*
 $doc$,
     NULL,
-    '/images/covers/markdown-syntax-test.jpg',
+    NULL,
     '<ul>
 <li><a href="#文本格式">文本格式</a></li>
 <ul>

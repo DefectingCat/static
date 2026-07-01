@@ -269,7 +269,7 @@ Docker 默认使用 OverlayFS（overlay2 存储驱动）来实现分层文件系
 建议从搭建一个完整的本地开发环境开始，用 docker-compose 把你常用的数据库、缓存、消息队列都跑起来，写一个简单的 Web 应用部署到上面。
 $doc$,
     NULL,
-    '/images/covers/docker-deep-dive.jpg',
+    NULL,
     '<ul>
 <li><a href="#前言">前言</a></li>
 <li><a href="#一-docker-架构与核心概念">一、Docker 架构与核心概念</a></li>

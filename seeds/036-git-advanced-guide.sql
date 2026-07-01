@@ -309,7 +309,7 @@ npx husky add .husky/pre-commit "npm run lint"
 理解 Git 的内部原理（对象模型、引用、暂存区）能让你更自信地使用高级操作。interactive rebase、cherry-pick、bisect 这些工具在日常开发中非常实用。选一个适合你团队的分支策略，配合 Git Hooks 保证代码质量。
 $doc$,
     NULL,
-    '/images/covers/git-advanced-guide.jpg',
+    NULL,
     '<ul>
 <li><a href="#前言">前言</a></li>
 <li><a href="#一-git-对象模型">一、Git 对象模型</a></li>

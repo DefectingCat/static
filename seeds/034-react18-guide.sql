@@ -142,7 +142,7 @@ Server Components 允许组件只在服务端渲染，不发送 JavaScript 到�
 React 18 不是一次 API 层面的大改，而是一次架构层面的升级。迁移成本不高，但需要仔细测试。建议先升级到 React 18，然后逐步引入并发特性。
 $doc$,
     NULL,
-    '/images/covers/react18-guide.jpg',
+    NULL,
     '<ul>
 <li><a href="#写在前面">写在前面</a></li>
 <li><a href="#并发渲染-react-调度机制的根本变化">并发渲染：React 调度机制的根本变化</a></li>

@@ -295,7 +295,7 @@ groups:
 CI/CD 不是一次性搭建完成的，它需要根据团队的实际情况持续调整。从最简单的流水线开始，逐步添加质量门禁、安全扫描、自动化部署。记住，工具是手段，目标是更快、更可靠地交付价值。
 $doc$,
     NULL,
-    '/images/covers/cicd-devops-guide.jpg',
+    NULL,
     '<ul>
 <li><a href="#前言">前言</a></li>
 <li><a href="#一-持续集成-ci">一、持续集成（CI）</a></li>

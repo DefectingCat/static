@@ -541,7 +541,7 @@ pub fn main() void {
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
-    '/images/covers/zig-memory-management.jpg',
+    NULL,
     '<ul>
 <li><a href="#显式内存分配">显式内存分配</a></li>
 <ul>

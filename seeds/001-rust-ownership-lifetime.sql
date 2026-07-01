@@ -495,7 +495,7 @@ Rust 的设计证明：**安全不需要牺牲性能**。通过将安全检查�
 *本文首发于 Yggdrasil 博客，转载请注明出处。*
 $doc$,
     NULL,
-    '/images/covers/rust-ownership-lifetime.jpg',
+    NULL,
     '<ul>
 <li><a href="#为什么需要所有权">为什么需要所有权？</a></li>
 <li><a href="#所有权的三条基本规则">所有权的三条基本规则</a></li>

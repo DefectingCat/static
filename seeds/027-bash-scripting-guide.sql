@@ -1044,7 +1044,7 @@ Shell 脚本写多了，你会发现自己在一堆引号和转义符号里迷�
 *本文首发于 Yggdrasil 博客*
     $doc$,
         NULL,
-        '/images/covers/bash-scripting-guide.jpg',
+        NULL,
         '<ul>
 <li><a href="#变量与引号-bash-的第一道坎">变量与引号：Bash 的第一道坎</a></li>
 <ul>

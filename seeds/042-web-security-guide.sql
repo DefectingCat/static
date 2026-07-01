@@ -75,7 +75,7 @@ Docker 使用非 root 用户、依赖安全扫描（npm audit、Snyk）、SAST�
 安全不是一次性的任务，而是持续的过程。把安全测试加入 CI/CD，定期更新依赖，对开发团队做安全培训，建立漏洞响应流程。
 $doc$,
     NULL,
-    '/images/covers/web-security-guide.jpg',
+    NULL,
     '<ul>
 <li><a href="#owasp-top-10-概览">OWASP Top 10 概览</a></li>
 <li><a href="#xss-跨站脚本攻击">XSS：跨站脚本攻击</a></li>

@@ -927,7 +927,7 @@ struct TodoListView: View {
 通过本文的学习，你应该已经掌握了 Swift 的核心语法特性，可以开始构建 iOS、macOS 或其他平台的应用程序了。
 $doc$,
     NULL,
-    '/images/covers/swift-modern-syntax.jpg',
+    NULL,
     '<ul>
 <li><a href="#为什么选择-swift">为什么选择 Swift？</a></li>
 <li><a href="#基础语法">基础语法</a></li>

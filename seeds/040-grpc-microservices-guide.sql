@@ -354,7 +354,7 @@ gRPC 服务的单元测试可以用 bufconn 建立内存连接，不需要启动
 gRPC 在微服务通信中比 REST 更高效、更可靠。Protocol Buffers 的强类型保证了接口契约，HTTP/2 提供了高效的传输，流式 RPC 支持了实时场景。但 gRPC 不是万能的——浏览器支持有限、调试不如 REST 直观、学习曲线较陡。选择 REST 还是 gRPC，取决于你的具体场景。
 $doc$,
     NULL,
-    '/images/covers/grpc-microservices-guide.jpg',
+    NULL,
     '<ul>
 <li><a href="#前言">前言</a></li>
 <li><a href="#一-protocol-buffers">一、Protocol Buffers</a></li>

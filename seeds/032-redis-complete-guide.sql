@@ -422,7 +422,7 @@ pipe.execute()
 Redis 的强大在于它的灵活性。理解了五种基础数据结构和它们的内部实现，你就能用 Redis 解决各种各样的问题。不要把 Redis 当成万能的——它最适合的场景是读多写少、数据量不太大、对延迟敏感的场景。
 $doc$,
     NULL,
-    '/images/covers/redis-complete-guide.jpg',
+    NULL,
     '<ul>
 <li><a href="#前言">前言</a></li>
 <li><a href="#一-redis-基础">一、Redis 基础</a></li>

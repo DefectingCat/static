@@ -677,7 +677,7 @@ class DataLoader {
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
-    '/images/covers/js-async-programming.jpg',
+    NULL,
     '<ul>
 <li><a href="#回调函数-异步编程的起点">回调函数：异步编程的起点</a></li>
 <ul>

@@ -675,7 +675,7 @@ PHP 8 确实让这门语言焕然一新。类型系统、枚举、Fiber、JIT—
 *本文首发于 Yggdrasil 博客*
     $doc$,
         NULL,
-        '/images/covers/php-modern-features.jpg',
+        NULL,
         '<ul>
 <li><a href="#类型系统的进化-从弱类型到强表达">类型系统的进化：从弱类型到强表达</a></li>
 <ul>

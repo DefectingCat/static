@@ -470,7 +470,7 @@ Clojure 适合什么样的人？如果你喜欢函数式编程，如果你厌倦
 *本文首发于 Yggdrasil 博客*
      $doc$,
          NULL,
-         '/images/covers/clojure-lisp-revival.jpg',
+         NULL,
          '<ul>
 <li><a href="#括号不是问题-s-expression-的真相">括号不是问题：S-expression 的真相</a></li>
 <li><a href="#不可变数据结构-持久化数据结构的妙用">不可变数据结构：持久化数据结构的妙用</a></li>

@@ -597,7 +597,7 @@ void moveSemantics() {
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
-    '/images/covers/cpp-raii.jpg',
+    NULL,
     '<ul>
 <li><a href="#什么是-raii">什么是 RAII？</a></li>
 <ul>

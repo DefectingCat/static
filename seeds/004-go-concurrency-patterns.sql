@@ -751,7 +751,7 @@ Go 的并发模型以其简洁和高效著称。核心要点：
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
-    '/images/covers/go-concurrency-patterns.jpg',
+    NULL,
     '<ul>
 <li><a href="#goroutine-轻量级并发单元">Goroutine：轻量级并发单元</a></li>
 <ul>

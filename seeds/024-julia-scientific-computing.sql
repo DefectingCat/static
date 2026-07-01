@@ -468,7 +468,7 @@ Julia 的弱点也很明显：编译时间慢（JIT 的代价）、包生态系�
 *本文首发于 Yggdrasil 博客*
      $doc$,
          NULL,
-         '/images/covers/julia-scientific-computing.jpg',
+         NULL,
          '<ul>
 <li><a href="#多重派发-julia-的设计灵魂">多重派发：Julia 的设计灵魂</a></li>
 <li><a href="#类型系统-灵活与性能的平衡">类型系统：灵活与性能的平衡</a></li>

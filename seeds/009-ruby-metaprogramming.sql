@@ -614,7 +614,7 @@ processor.process_large_dataset([1, 2, 3, 4, 5])
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
-    '/images/covers/ruby-metaprogramming.jpg',
+    NULL,
     '<ul>
 <li><a href="#什么是元编程">什么是元编程？</a></li>
 <li><a href="#动态方法定义">动态方法定义</a></li>

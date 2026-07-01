@@ -508,7 +508,7 @@ type ComplexType = Lazy<SomeDeepNesting>;
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
-    '/images/covers/typescript-type-gymnastics.jpg',
+    NULL,
     '<ul>
 <li><a href="#为什么需要高级类型">为什么需要高级类型？</a></li>
 <li><a href="#条件类型-conditional-types">条件类型（Conditional Types）</a></li>

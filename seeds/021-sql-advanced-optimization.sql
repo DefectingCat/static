@@ -819,7 +819,7 @@ SQL 优化是一门实践性很强的技能。读十篇优化文章不如实际�
 *本文首发于 Yggdrasil 博客*
     $doc$,
         NULL,
-        '/images/covers/sql-advanced-optimization.jpg',
+        NULL,
         '<ul>
 <li><a href="#执行计划分析-优化的起点">执行计划分析：优化的起点</a></li>
 <li><a href="#索引策略-不是越多越好">索引策略：不是越多越好</a></li>

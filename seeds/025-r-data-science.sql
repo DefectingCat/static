@@ -484,7 +484,7 @@ R 语言是一面镜子——它反映了统计学和数据科学社区的需求
 *本文首发于 Yggdrasil 博客*
      $doc$,
          NULL,
-         '/images/covers/r-data-science.jpg',
+         NULL,
          '<ul>
 <li><a href="#向量化运算-r-的核心思维方式">向量化运算：R 的核心思维方式</a></li>
 <li><a href="#dplyr-数据处理的艺术">dplyr：数据处理的艺术</a></li>

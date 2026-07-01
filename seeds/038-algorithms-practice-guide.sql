@@ -237,7 +237,7 @@ def reverseList(head):
 算法学习是一个持续的过程。不需要背诵所有算法的模板，但要理解每种算法的核心思想和适用场景。遇到问题时，先分析时间复杂度需求，再选择合适的算法。
 $doc$,
     NULL,
-    '/images/covers/algorithms-practice-guide.jpg',
+    NULL,
     '<ul>
 <li><a href="#前言">前言</a></li>
 <li><a href="#一-排序算法">一、排序算法</a></li>

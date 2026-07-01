@@ -328,7 +328,7 @@ WebSocket 支持 permessage-deflate 扩展，可以压缩消息。
 WebSocket 是实时应用的核心技术。选择 WebSocket 还是 SSE 取决于你的场景是否需要双向通信。如果只需要服务端推送，SSE 更简单。如果需要双向实时通信，WebSocket 是唯一选择。生产环境别忘了心跳机制、认证、多实例部署这些关键问题。
 $doc$,
     NULL,
-    '/images/covers/websocket-realtime-guide.jpg',
+    NULL,
     '<ul>
 <li><a href="#前言">前言</a></li>
 <li><a href="#一-websocket-基础">一、WebSocket 基础</a></li>

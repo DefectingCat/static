@@ -561,7 +561,7 @@ except ValueError:
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
-    '/images/covers/python-decorators-guide.jpg',
+    NULL,
     '<ul>
 <li><a href="#什么是装饰器">什么是装饰器？</a></li>
 <li><a href="#处理带参数的函数">处理带参数的函数</a></li>

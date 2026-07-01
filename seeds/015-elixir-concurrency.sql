@@ -658,7 +658,7 @@ Elixir 的并发和容错能力源于其独特的设计哲学：
 通过掌握这些概念，你可以构建出真正高可用、容错的分布式系统，充分利用多核 CPU 和集群环境。
 $doc$,
     NULL,
-    '/images/covers/elixir-concurrency.jpg',
+    NULL,
     '<ul>
 <li><a href="#为什么选择-elixir">为什么选择 Elixir？</a></li>
 <li><a href="#elixir-进程模型">Elixir 进程模型</a></li>

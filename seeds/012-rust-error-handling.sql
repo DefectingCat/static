@@ -637,7 +637,7 @@ impl ErrorReporter {
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
-    '/images/covers/rust-error-handling.jpg',
+    NULL,
     '<ul>
 <li><a href="#为什么-rust-没有异常">为什么 Rust 没有异常？</a></li>
 <li><a href="#option-类型-处理可能缺失的值">Option 类型：处理可能缺失的值</a></li>

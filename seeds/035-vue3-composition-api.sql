@@ -384,7 +384,7 @@ const emit = defineEmits<{
 Vue 3 的 Composition API 不仅仅是语法变化，它带来了更好的逻辑复用、更清晰的代码组织、更好的 TypeScript 支持。掌握 ref vs reactive 的选择、composables 的设计模式、provide/inject 的正确用法，你的 Vue 3 代码质量会有质的提升。
 $doc$,
     NULL,
-    '/images/covers/vue3-composition-api.jpg',
+    NULL,
     '<ul>
 <li><a href="#前言">前言</a></li>
 <li><a href="#一-响应式系统">一、响应式系统</a></li>

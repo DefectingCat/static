@@ -637,7 +637,7 @@ OCaml 的编译器是我用过的最友好的编译器之一。错误信息清�
 *本文首发于 Yggdrasil 博客*
     $doc$,
         NULL,
-        '/images/covers/ocaml-strongly-typed.jpg',
+        NULL,
         '<ul>
 <li><a href="#类型推导-编译器比你更懂你的代码">类型推导：编译器比你更懂你的代码</a></li>
 <li><a href="#代数数据类型-用类型描述世界">代数数据类型：用类型描述世界</a></li>

@@ -495,7 +495,7 @@ Haskell 可能不是最适合所有场景的语言，但它所倡导的函数式
 *本文首发于 Yggdrasil 博客*
 $doc$,
     NULL,
-    '/images/covers/haskell-pure-functions.jpg',
+    NULL,
     '<ul>
 <li><a href="#纯函数-pure-functions">纯函数（Pure Functions）</a></li>
 <ul>

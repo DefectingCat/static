@@ -75,7 +75,7 @@ stub_status 提供基本的连接统计。配合 nginx-vts-exporter 可以把指
 Nginx 入门不难但精通需要时间。每次线上出问题回头看，往往都是配置里某个参数没调对。建议把线上验证过的配置模板化，新项目直接用。配置改之前一定跑 `nginx -t`。
 $doc$,
     NULL,
-    '/images/covers/nginx-performance-guide.jpg',
+    NULL,
     '<ul>
 <li><a href="#1-nginx-的架构-master-worker-模型">1. Nginx 的架构：master-worker 模型</a></li>
 <li><a href="#2-虚拟主机与-server_name-匹配">2. 虚拟主机与 server_name 匹配</a></li>

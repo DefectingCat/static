@@ -557,7 +557,7 @@ Lua 的哲学很简单：**用最小的核心提供最大的灵活性**。它不
 *本文首发于 Yggdrasil 博客*
     $doc$,
         NULL,
-        '/images/covers/lua-embedded-scripting.jpg',
+        NULL,
         '<ul>
 <li><a href="#表-table-万物归一的数据结构">表（Table）：万物归一的数据结构</a></li>
 <li><a href="#元表与元方法-打开-lua-的魔法盒">元表与元方法：打开 Lua 的魔法盒</a></li>

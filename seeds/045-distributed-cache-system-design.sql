@@ -286,7 +286,7 @@ Singleflight 的核心思想非常直接：**对于同一个 Key 的并发请求
 在实际构建 Singleflight 并发控制时，往往存在三个极其隐蔽的系统设计缺陷：
 
 1. **Panic 泄露与资源悬空（Panic Leakage）**：
-   If 真正执行数据库查询的那唯一一个 Goroutine 发生了运行时 Panic（例如数据库驱动空指针、网络连接断开导致解析越界），如果 Singleflight 的实现代码没有在其执行路径上做好 `recover()` 拦截，那么这个 Panic 将会导致执行链条中断。导致的结果是，用于控制并发等待的 `sync.WaitGroup` 的 `Done()` 方法永远不会被执行。所有其他正在阻塞等待该结果的 Goroutine 将陷入死锁状态（Go 调度器表现为内存泄漏与线程挂起）。
+   If 真正执行数据库查询的那唯一一个 Goroutine 发生了运行时 Panic（例如数据库驱动空指针、网络连接断开导致解析越界），如果 Singleflight 的实现代码没有在其执行路径上做好 `recover()` 拦截，那么这个 Panic 将会导致执行链条中断。导致的结果是，用于控制并发等待的通道（Channel）永远不会被关闭。所有其他正在阻塞等待该通道的 Goroutine 将陷入死锁状态（Go 调度器表现为内存泄漏与线程挂起）。
 2. **Context 取消传递死锁（Context Cancellation）**：
    假设上游 100 个 HTTP 请求并发访问该 Key，Singleflight 内部使用了一个阻塞等待的机制。如果发起真正 DB 调用的那个 HTTP 请求的 Context 发生了超时（Timeout）或被客户端主动取消（Cancel），它如果直接退出并返回错误，那么其余 99 个正在等待的请求是应当直接跟着失败，还是应当将执行权“转接”给另外一个存活的请求？如果处理不当，会导致原本存活的请求因为第一个请求的取消而无故报错。
 3. **Slow Query 长期阻塞**：
@@ -901,7 +901,6 @@ func (h *HashRing) GetNode(key string) string {
 // 五、带 Panic 保护与 Context 取消机制的 Singleflight
 // =============================================================================
 type call struct {
-	wg       sync.WaitGroup
 	val      interface{}
 	err      error
 	ch       chan struct{}
@@ -945,18 +944,16 @@ func (g *SingleflightGroup) Do(ctx context.Context, key string, fn func(ctx cont
 	c := &call{
 		ch: make(chan struct{}),
 	}
-	c.wg.Add(1)
 	g.m[key] = c
 	g.mu.Unlock()
 
 	go func() {
 		defer func() {
-			// Panic 捕获与保护机制，确保 WaitGroup 绝对不会挂起
+			// Panic 捕获与保护机制，确保通道绝对会被关闭以防止挂起
 			if r := recover(); r != nil {
 				c.panicVal = r
 			}
 			close(c.ch)
-			c.wg.Done()
 
 			g.mu.Lock()
 			delete(g.m, key)

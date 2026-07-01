@@ -939,30 +939,36 @@ impl Worker {
 
     // 执行任务的 poll 驱动
     fn execute_task(&self, task: Arc<Task>) {
-        if let Ok(mut future_guard) = task.future.try_lock() {
-            // Reset queue state here so a new wake signal during or after poll will enqueue it again
-            task.is_queued.store(false, Ordering::SeqCst);
-            
-            if let Some(mut future) = future_guard.take() {
-                // 构造上下文
-                let waker = create_waker(&task);
-                let mut context = Context::from_waker(&waker);
+        let mut acquired = false;
+        {
+            if let Ok(mut future_guard) = task.future.try_lock() {
+                acquired = true;
+                // Reset queue state here so a new wake signal during or after poll will enqueue it again
+                task.is_queued.store(false, Ordering::SeqCst);
+                
+                if let Some(mut future) = future_guard.take() {
+                    // 构造上下文
+                    let waker = create_waker(&task);
+                    let mut context = Context::from_waker(&waker);
 
-                // 执行核心 poll 动作
-                match future.as_mut().poll(&mut context) {
-                    Poll::Ready(()) => {
-                        // 任务执行完毕，递减活跃任务计数
-                        self.scheduler.active_tasks.fetch_sub(1, Ordering::SeqCst);
-                        println!("[Worker {}] Task executed successfully.", self.id);
-                    }
-                    Poll::Pending => {
-                        // 未完成，重新写回任务控制块，等待 Reactor 触发 Waker
-                        *future_guard = Some(future);
+                    // 执行核心 poll 动作
+                    match future.as_mut().poll(&mut context) {
+                        Poll::Ready(()) => {
+                            // 任务执行完毕，递减活跃任务计数
+                            self.scheduler.active_tasks.fetch_sub(1, Ordering::SeqCst);
+                            println!("[Worker {}] Task executed successfully.", self.id);
+                        }
+                        Poll::Pending => {
+                            // 未完成，重新写回任务控制块，等待 Reactor 触发 Waker
+                            *future_guard = Some(future);
+                        }
                     }
                 }
             }
-        } else {
-            println!("[Worker {}] Task is already being executed by another worker, skipping.", self.id);
+        }
+        if !acquired {
+            // 无法获取锁说明此任务已在另一个工作线程中执行，将其重新推回队列以防唤醒事件丢失或任务饿死
+            self.scheduler.enqueue_task(task);
         }
     }
 }

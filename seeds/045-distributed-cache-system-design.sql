@@ -1128,6 +1128,8 @@ func (node *CacheNode) GetOrFetch(ctx context.Context, key string, ttl time.Dura
 		if err != nil {
 			return nil, err
 		}
+		// 写入本地缓存以防之后重复穿透到底座数据库
+		node.localCache.Set(key, val, ttl)
 		return val, nil
 	})
 
